@@ -14,7 +14,7 @@ const gracefulShutdown = () => {
 	sessionsClient
 		.disconnect()
 		.then(() => console.info('sessionsClient disconnected!'))
-		.catch((e) => console.error(e));
+		.catch(console.error);
 	try {
 		discordClient.destroy();
 		console.info('discordClient destroyed!');

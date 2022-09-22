@@ -1,13 +1,18 @@
 # Pomomo Bot
 
-### Requirements:
+## Requirements:
 
--   node v18.9.0
--   npm i
--   tsc: build
--   npm run registerCommands
--   npm run prod
+- npm v8.19.1
+- node v18.9.0
+
+## Deployment:
+
+- configure all config/\*.json files
+- npm i
+- tsc: build
+- npm run register-commands
+- npm run prod
 
 ### Extensions:
 
--   ESLint Name: [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
