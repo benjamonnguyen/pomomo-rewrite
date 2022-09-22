@@ -1,23 +1,26 @@
 import config from 'config';
 import 'reflect-metadata';
-import { Client, GatewayIntentBits } from 'discord.js';
-import { sessionsClient } from './db/redisClient';
+import discordClient from './discord/discord-client';
+import { sessionsClient } from './db/redis-clients';
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+await discordClient.login(config.get('botToken'));
+console.info('discordClient logged in!');
 
-client.once('ready', () => {
-	console.log('Ready!');
-});
-
-await client.login(config.get('botToken'));
+await sessionsClient.connect();
+console.info('sessionsClient connected!');
 
 const gracefulShutdown = () => {
-	console.log('Starting graceful shutdown');
+	console.info('Starting graceful shutdown...');
 	sessionsClient
 		.disconnect()
-		.then(() => console.log('Disconnected from redisClient'));
-
-	console.log('Graceful shutdown completed');
+		.then(() => console.info('sessionsClient disconnected!'))
+		.catch((e) => console.error(e));
+	try {
+		discordClient.destroy();
+		console.info('discordClient destroyed!');
+	} catch (e) {
+		console.error(e);
+	}
 };
 
 process.on('SIGTERM', gracefulShutdown);

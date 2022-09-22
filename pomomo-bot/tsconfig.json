@@ -14,5 +14,5 @@
 			"*": ["node_modules/*", "src/types/*"]
 		}
 	},
-	"include": ["/**/*.ts"]
+	"include": ["/**/*.ts", "src/register-commands.ts"]
 }

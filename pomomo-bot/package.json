@@ -6,9 +6,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",
-		"prod": "export NODE_ENV=prod && node .",
-		"registerCommands": "NODE_ENV=prod && node dist/commandRegistry.js",
-		"registerCommandsDev": "export NODE_ENV=dev && node dist/commandRegistry.js"
+		"prod": "export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node .",
+		"register-commands": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js"
 	},
 	"author": "benjinguyen",
 	"license": "ISC",

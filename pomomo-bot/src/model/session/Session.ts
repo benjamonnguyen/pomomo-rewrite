@@ -1,79 +1,68 @@
-import SessionSettings from '../setting/SessionSettings';
-import ESessionState from '../session/ESessionState';
+import { SessionSettings } from '../setting/SessionSettings';
 import Timer from '../timer/Timer';
-import { Type, instanceToPlain } from 'class-transformer';
-import { sessionsClient } from '../../db/redisClient';
-import { SessionConflictError } from '../../error/sessionError';
+import { Type } from 'class-transformer';
 
-class Session {
-	#guildId?: number;
-	#channelId?: number;
-	#voiceChannelId?: number;
-	#userId?: number;
-	#messageId: number;
-	#state: ESessionState;
+enum ESessionState {
+	POMODORO,
+	SHORT_BREAK,
+	LONG_BREAK,
+}
+
+export class Session {
+	guildId: string;
+	channelId: string;
+	voiceChannelId?: string;
+	// #userId?: number; TODO allow DM sessions
+	messageId: string;
+	state: ESessionState;
 	@Type(() => SessionSettings) settings: SessionSettings;
-	@Type(() => Timer) timer: Timer;
-	#idleFlag: boolean;
-	#lastUpdated: Date;
+	@Type(() => Timer) _timer: Timer;
+	idleFlag: boolean;
+	lastUpdated: Date;
 
 	constructor(
-		messageId: number,
 		settings: SessionSettings,
-		guildId?: number,
-		channelId?: number,
-		voiceChannelId?: number,
-		userId?: number,
+		messageId: string,
+		guildId: string,
+		channelId: string,
+		voiceChannelId: string,
 	) {
-		if (!userId && (!guildId || !channelId)) {
-			throw 'Either userId or guildId and channelId must be provided';
-		}
+		// if (!userId && (!guildId || !channelId)) {
+		// 	throw 'Either userId or guildId and channelId must be provided';
+		// }
 
-		this.#guildId = guildId;
-		this.#channelId = channelId;
-		this.#voiceChannelId = voiceChannelId;
-		this.#userId = userId;
-		this.#messageId = messageId;
+		this.guildId = guildId;
+		this.channelId = channelId;
+		this.voiceChannelId = voiceChannelId;
+		// this.#userId = userId;
+		this.messageId = messageId;
 		this.settings = settings;
-		this.#state = ESessionState.POMODORO;
-		this.timer = new Timer(settings.intervalSettings.pomodoro);
-		this.#idleFlag = false;
-		this.#lastUpdated = new Date();
+		this.state = ESessionState.POMODORO;
+		this._timer = new Timer(settings.intervalSettings.pomodoro);
+		this.idleFlag = false;
+		this.lastUpdated = new Date();
 	}
 
 	get id(): string {
-		if (this.#userId) {
-			return `u:${this.#userId}`;
-		}
+		// if (this.#userId) {
+		// 	return `u:${this.#userId}`;
+		// }
 
-		return `g:${this.#guildId}c:${this.#channelId}`;
+		return `g:${this.guildId}c:${this.channelId}`;
+	}
+
+	// TODO calculate timer properties
+	toggleTimer() {
+		this._timer.isRunning = !this._timer.isRunning;
 	}
 }
 
-const start = (
-	messageId: number,
-	settings: SessionSettings,
-	guildId?: number,
-	channelId?: number,
-	voiceChannelId?: number,
-	userId?: number,
-) => {
-	const session = new Session(
-		messageId,
-		settings,
-		guildId,
-		channelId,
-		voiceChannelId,
-		userId,
-	);
+export class SessionConflictError extends Error {
+	message: string;
+	userMessage = 'Session already exists for this channel';
 
-	if (sessionsClient.get(session.id)) {
-		throw new SessionConflictError(
-			`Session already exists for id: ${session.id}`,
-		);
-	} else {
-		sessionsClient.json.set(session.id, '.', instanceToPlain(session));
+	constructor(sessionId: string) {
+		super();
+		this.message = `Session already exists for id: ${sessionId}`;
 	}
-};
-
-export { start };
+}

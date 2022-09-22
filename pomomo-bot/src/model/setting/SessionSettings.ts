@@ -1,14 +1,40 @@
 import IntervalSettings from './IntervalSettings';
 import { Type } from 'class-transformer';
 
-class SessionSettings {
+export class SessionSettings {
 	volume: number;
-	@Type(() => IntervalSettings) intervalSettings: IntervalSettings;
+	@Type(() => IntervalSettings) intervalSettings;
 
-	constructor(volume: number, intervalSettings: IntervalSettings) {
+	constructor(volume = 10, intervalSettings = new IntervalSettings()) {
 		this.volume = volume;
 		this.intervalSettings = intervalSettings;
 	}
 }
 
-export default SessionSettings;
+export class SessionSettingsBuilder {
+	sessionSettings = new SessionSettings();
+
+	intervalSettings(
+		pomodoro: number,
+		shortBreak: number,
+		longBreak: number,
+		intervals: number,
+	): SessionSettingsBuilder {
+		this.sessionSettings.intervalSettings = new IntervalSettings(
+			pomodoro,
+			shortBreak,
+			longBreak,
+			intervals,
+		);
+		return this;
+	}
+
+	volume(volume: number): SessionSettingsBuilder {
+		this.sessionSettings.volume = volume;
+		return this;
+	}
+
+	build() {
+		return this.sessionSettings;
+	}
+}
