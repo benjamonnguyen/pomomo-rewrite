@@ -6,8 +6,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",
-		"prod": "export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node .",
-		"register-commands": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js"
+		"register-commands-dev": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js",
+		"register-commands-prod": "export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js"
 	},
 	"author": "benjinguyen",
 	"license": "ISC",
@@ -15,6 +15,8 @@
 		"@discordjs/rest": "^1.1.0",
 		"class-transformer": "^0.5.1",
 		"config": "^3.3.8",
+		"discord-cross-hosting": "^2.3.2",
+		"discord-hybrid-sharding": "^1.7.4",
 		"discord.js": "^14.3.0",
 		"redis": "^4.3.1",
 		"reflect-metadata": "^0.1.13",

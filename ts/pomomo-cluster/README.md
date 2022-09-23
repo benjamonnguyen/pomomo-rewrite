@@ -1,4 +1,4 @@
-# Pomomo Bot
+# Pomomo Cluster
 
 ## Requirements:
 

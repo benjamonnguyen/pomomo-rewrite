@@ -6,13 +6,9 @@
 		"watch": true,
 		"esModuleInterop": true,
 		"noImplicitAny": true,
+		"skipLibCheck": true,
 		"moduleResolution": "node",
-		"sourceMap": true,
-		"outDir": "dist",
-		"baseUrl": ".",
-		"paths": {
-			"*": ["node_modules/*", "src/types/*"]
-		}
+		"sourceMap": true
 	},
-	"include": ["/**/*.ts", "src/register-commands.ts"]
+	"include": ["/**/*.ts"]
 }

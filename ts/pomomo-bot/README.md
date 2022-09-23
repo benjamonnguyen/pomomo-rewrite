@@ -11,8 +11,7 @@
 - npm i
 - tsc: build
 - npm run register-commands
-- npm run prod
 
-### Extensions:
+### VSCode Extensions:
 
 - [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)

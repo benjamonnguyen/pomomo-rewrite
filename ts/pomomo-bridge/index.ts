@@ -8,9 +8,22 @@ const bridge = new Bridge({
 	shardsPerCluster: config.get('shardsPerCluster'),
 	token: config.get('botToken'),
 });
-
 bridge.on('debug', console.debug);
-bridge.once('ready', (url) => console.info(`bridge ready at url: ${url}`));
 bridge.on('clientMessage', console.debug);
 
-export default bridge;
+bridge
+	.start()
+	.then((b) => console.info(`bridge started: ${JSON.stringify(b, null, 2)}`));
+
+const gracefulShutdown = () => {
+	console.info('Starting graceful shutdown...');
+	bridge
+		.close()
+		.then(() => console.info('bridge closed!'))
+		.catch(console.error);
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+export {};
