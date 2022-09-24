@@ -16,7 +16,7 @@ export class Session {
 	messageId: string;
 	state: ESessionState;
 	@Type(() => SessionSettings) settings: SessionSettings;
-	@Type(() => Timer) _timer: Timer;
+	@Type(() => Timer) timer: Timer;
 	idleFlag: boolean;
 	lastUpdated: Date;
 
@@ -38,7 +38,7 @@ export class Session {
 		this.messageId = messageId;
 		this.settings = settings;
 		this.state = ESessionState.POMODORO;
-		this._timer = new Timer(settings.intervalSettings.pomodoro);
+		this.timer = new Timer(settings.intervalSettings.pomodoro);
 		this.idleFlag = false;
 		this.lastUpdated = new Date();
 	}
@@ -53,7 +53,7 @@ export class Session {
 
 	// TODO calculate timer properties
 	toggleTimer() {
-		this._timer.isRunning = !this._timer.isRunning;
+		this.timer.isRunning = !this.timer.isRunning;
 	}
 }
 

@@ -19,9 +19,11 @@ for (const file of commandFiles) {
 	commands.push(command.toJSON());
 }
 
-const rest = new REST({ version: '10' }).setToken(config.get('botToken'));
-
-rest.put(Routes.applicationCommands(config.get('clientId')), { body: commands })
+const rest = new REST({ version: '10' }).setToken(config.get('bot.token'));
+rest
+	.put(Routes.applicationCommands(config.get('bot.clientId')), {
+		body: commands,
+	})
 	.then((data) => {
 		console.info(JSON.stringify(data, null, 2));
 		process.exit();

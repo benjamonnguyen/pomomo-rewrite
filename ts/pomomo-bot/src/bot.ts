@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+import config from 'config';
 import {
 	Client,
 	Collection,
@@ -6,42 +8,48 @@ import {
 	ClientOptions,
 	Interaction,
 } from 'discord.js';
+import crossHosting from 'discord-cross-hosting';
+import Cluster from 'discord-hybrid-sharding';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'url';
+import { sessionsClient } from './db/redis-clients';
 
 export class DiscordClient extends Client {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	commands: Collection<
 		string,
 		(interaction: CommandInteraction) => Promise<void>
 	>;
+	cluster: Cluster.Client;
+	machine: crossHosting.Shard;
 
 	constructor(options: ClientOptions) {
 		super(options);
 		this.commands = new Collection();
+		this.cluster = new Cluster.Client(this);
+		this.machine = new crossHosting.Shard(this.cluster);
 	}
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const discordClient = new DiscordClient({
 	intents: [GatewayIntentBits.Guilds],
+	shards: Cluster.Client.getInfo().SHARD_LIST,
+	shardCount: Cluster.Client.getInfo().TOTAL_SHARDS,
 });
+discordClient.on('debug', console.debug);
+discordClient.on('error', console.error);
+discordClient.on('warn', console.warn);
+
+// Load up commands
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const commandsPath = path.join(__dirname, '../commands');
+const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs
 	.readdirSync(commandsPath)
 	.filter((p) => p.endsWith('.js'));
-
 for (const file of commandFiles) {
-	// eslint-disable-next-line @typescript-eslint/no-var-requires
 	const { command, execute } = await import(path.join(commandsPath, file));
 	discordClient.commands.set(command.name, execute);
 }
-
-discordClient.once('ready', () => {
-	console.info('discordClient ready!');
-});
 
 discordClient.on('interactionCreate', async (interaction: Interaction) => {
 	if (!interaction.isCommand) return;
@@ -67,4 +75,23 @@ discordClient.on('interactionCreate', async (interaction: Interaction) => {
 	}
 });
 
-export default discordClient;
+await discordClient.login(config.get('bot.token'));
+await sessionsClient.connect();
+
+const gracefulShutdown = () => {
+	sessionsClient
+		.disconnect()
+		.then(() => console.info('sessionsClient disconnected!'))
+		.catch(console.error);
+	try {
+		discordClient.destroy();
+		console.info('discordClient destroyed!');
+	} catch (e) {
+		console.error(e);
+	}
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
+export {};
