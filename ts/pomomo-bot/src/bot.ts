@@ -79,7 +79,6 @@ await discordClient.login(config.get('bot.token'));
 await sessionsClient.connect();
 
 const gracefulShutdown = () => {
-	console.info('Starting graceful shutdown...');
 	sessionsClient
 		.disconnect()
 		.then(() => console.info('sessionsClient disconnected!'))

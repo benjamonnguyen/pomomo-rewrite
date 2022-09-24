@@ -2,13 +2,12 @@
 	"compilerOptions": {
 		"module": "esnext",
 		"experimentalDecorators": true,
-		"target": "es2017",
+		"target": "es2022",
 		"watch": true,
 		"esModuleInterop": true,
 		"noImplicitAny": true,
 		"skipLibCheck": true,
 		"moduleResolution": "node",
 		"sourceMap": true
-	},
-	"include": ["/**/*.ts"]
+	}
 }

@@ -4,7 +4,8 @@
 		"baseUrl": "src",
 		"outDir": "dist",
 		"paths": {
-			"*": ["node_modules", "src/types"],
+			"*": ["../node_modules/*", "types/*"]
 		}
-	}
+	},
+	"include": ["**/*.ts"]
 }

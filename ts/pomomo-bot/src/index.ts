@@ -18,7 +18,9 @@ client.on('bridgeRequest', console.info);
 
 // Manager setup
 const botPath = path.join('dist', 'bot.js');
-const manager = new Cluster.Manager(botPath);
+const manager = new Cluster.Manager(botPath, {
+	execArgv: ['--experimental-modules', '--es-module-specifier-resolution=node'],
+});
 manager.on('debug', console.debug);
 
 client.connect();
@@ -35,12 +37,18 @@ client
 
 client.listen(manager);
 
-const gracefulShutdown = () => {
+const gracefulShutdown = async () => {
 	console.info('Starting graceful shutdown...');
-	client
-		.close()
-		.then(() => console.info('clusterClient closed!'))
-		.catch(console.error);
+
+	await client.close();
+	console.info('clusterClient closed!');
+
+	await new Promise(() =>
+		setTimeout(() => {
+			console.info('Shutting down');
+			process.exit();
+		}, 10000),
+	);
 };
 
 process.on('SIGTERM', gracefulShutdown);
