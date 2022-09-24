@@ -1,13 +1,16 @@
 {
-	"compilerOptions": {
-		"module": "esnext",
-		"experimentalDecorators": true,
-		"target": "es2022",
-		"watch": true,
-		"esModuleInterop": true,
-		"noImplicitAny": true,
-		"skipLibCheck": true,
-		"moduleResolution": "node",
-		"sourceMap": true
-	}
+  "compilerOptions": {
+    "module": "esnext",
+    "experimentalDecorators": true,
+    "target": "es2022",
+    "watch": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true
+    "strict": true,
+    "strictPropertyInitialization": false
+  }
 }

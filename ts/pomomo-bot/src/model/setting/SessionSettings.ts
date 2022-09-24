@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 
 export class SessionSettings {
 	volume: number;
-	@Type(() => IntervalSettings) intervalSettings;
+	@Type(() => IntervalSettings) intervalSettings: IntervalSettings;
 
 	constructor(volume = 10, intervalSettings = new IntervalSettings()) {
 		this.volume = volume;
