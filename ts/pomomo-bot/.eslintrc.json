@@ -13,8 +13,14 @@
 		"ecmaVersion": 2021,
 		"sourceType": "module"
 	},
-	"plugins": ["@typescript-eslint", "prettier"],
+	"plugins": [
+		"@typescript-eslint",
+		"@typescript-eslint/eslint-plugin",
+		"prettier",
+		"unused-imports"
+	],
 	"rules": {
+		"unused-imports/no-unused-imports": "error",
 		"@typescript-eslint/no-shadow": "error",
 		"arrow-spacing": ["warn", { "before": true, "after": true }],
 		"comma-dangle": ["error", "always-multiline"],

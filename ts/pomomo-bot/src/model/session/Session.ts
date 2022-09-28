@@ -1,6 +1,7 @@
 import { SessionSettings } from '../setting/SessionSettings';
 import Timer from '../timer/Timer';
 import { Type } from 'class-transformer';
+import { buildSessionKey } from '../../db/sessions-client';
 
 enum ESessionState {
 	POMODORO,
@@ -11,58 +12,41 @@ enum ESessionState {
 export class Session {
 	guildId: string;
 	channelId: string;
-	voiceChannelId?: string;
+	voiceChannelId: string;
 	// #userId?: number; TODO allow DM sessions
 	messageId: string;
 	state: ESessionState;
 	@Type(() => SessionSettings) settings: SessionSettings;
 	@Type(() => Timer) timer: Timer;
 	idleFlag: boolean;
-	lastUpdated: Date;
+	@Type(() => Date) lastUpdated: Date;
 
-	constructor(
+	static init(
 		settings: SessionSettings,
-		messageId: string,
 		guildId: string,
 		channelId: string,
 		voiceChannelId: string,
 	) {
+		const session = new Session();
 		// if (!userId && (!guildId || !channelId)) {
 		// 	throw 'Either userId or guildId and channelId must be provided';
 		// }
+		// TODO check that msg and channels still exist else end
 
-		this.guildId = guildId;
-		this.channelId = channelId;
-		this.voiceChannelId = voiceChannelId;
+		session.guildId = guildId;
+		session.channelId = channelId;
+		session.voiceChannelId = voiceChannelId;
 		// this.#userId = userId;
-		this.messageId = messageId;
-		this.settings = settings;
-		this.state = ESessionState.POMODORO;
-		this.timer = new Timer(settings.intervalSettings.pomodoro);
-		this.idleFlag = false;
-		this.lastUpdated = new Date();
+		session.settings = settings;
+		session.state = ESessionState.POMODORO;
+		session.timer = Timer.init(settings.intervalSettings.pomodoro * 60);
+		session.idleFlag = false;
+		session.lastUpdated = new Date();
+
+		return session;
 	}
 
-	get id(): string {
-		// if (this.#userId) {
-		// 	return `u:${this.#userId}`;
-		// }
-
-		return `g:${this.guildId}c:${this.channelId}`;
-	}
-
-	// TODO calculate timer properties
-	toggleTimer() {
-		this.timer.isRunning = !this.timer.isRunning;
-	}
-}
-
-export class SessionConflictError extends Error {
-	message: string;
-	userMessage = 'Session already exists for this channel';
-
-	constructor(sessionId: string) {
-		super();
-		this.message = `Session already exists for id: ${sessionId}`;
+	get id() {
+		return buildSessionKey(this.guildId, this.channelId);
 	}
 }

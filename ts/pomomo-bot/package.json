@@ -6,7 +6,9 @@
 	"main": "dist/index.js",
 	"type": "module",
 	"scripts": {
-		"dev": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",
+		"dev": "export IS_CLUSTERED=true && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",
+		"dev-no-cluster": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/bot.js",
+		"test": "jest",
 		"register-commands-dev": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js",
 		"register-commands-prod": "export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js"
 	},
@@ -29,6 +31,8 @@
 		"@typescript-eslint/parser": "^5.37.0",
 		"eslint": "^8.23.1",
 		"eslint-config-prettier": "^8.5.0",
-		"eslint-plugin-prettier": "^4.2.1"
+		"eslint-plugin-prettier": "^4.2.1",
+		"eslint-plugin-unused-imports": "^2.0.0",
+		"jest": "^29.0.3"
 	}
 }

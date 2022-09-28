@@ -3,11 +3,18 @@ import {
 	SlashCommandBuilder,
 	CommandInteraction,
 	GuildMember,
+	ThreadAutoArchiveDuration,
+	AnyThreadChannel,
 } from 'discord.js';
-import { SessionSettingsBuilder } from '../model/setting/SessionSettings';
-import { sessionsClient } from '../db/redis-clients';
-import { Session, SessionConflictError } from '../model/session/Session';
-import { instanceToPlain } from 'class-transformer';
+import { SessionSettingsBuilder } from '../../model/setting/SessionSettings';
+import {
+	sessionsClient,
+	buildSessionKey,
+	SessionConflictError,
+	setSession,
+} from '../../db/sessions-client';
+import { Session } from '../../model/session/Session';
+import { send } from '../../message/session-message';
 
 enum EOption {
 	POMODORO = 'pomodoro',
@@ -56,23 +63,25 @@ export const command = new SlashCommandBuilder()
 			.setMaxValue(config.get('command.start.max')),
 	);
 
-const _validate = (interaction: CommandInteraction): string => {
-	if (!interaction.guild) {
-		return 'Command must be sent from a guild';
+const _validate = async (interaction: CommandInteraction): Promise<string> => {
+	if (!interaction.inGuild()) {
+		return 'Command must be sent from a server channel';
+	}
+	if (interaction.channel.isThread()) {
+		return 'Command cannot be sent from a thread';
 	}
 
-	const member = interaction.member as GuildMember;
-	if (!member.voice) {
+	if (!(interaction.member as GuildMember).voice.channelId) {
 		return 'Must be in a voice channel to start a session';
 	}
 
 	return null;
 };
 
-const _createAndPersistSession = async (
+const _createSession = async (
 	interaction: CommandInteraction,
-	messageId: string,
-): Promise<void> => {
+	thread: AnyThreadChannel,
+): Promise<Session> => {
 	const pomodoro = interaction.options.get(EOption.POMODORO);
 	const shortBreak = interaction.options.get(EOption.SHORT_BREAK);
 	const longBreak = interaction.options.get(EOption.LONG_BREAK);
@@ -88,20 +97,25 @@ const _createAndPersistSession = async (
 
 	const member = interaction.member as GuildMember;
 
-	const session = new Session(
+	const session = Session.init(
 		settings,
-		messageId,
 		interaction.guildId,
-		interaction.channelId,
-		member.id,
+		thread.id,
+		member.voice.channelId,
 	);
 
-	const sessionInDb = await sessionsClient.json.get(session.id);
-	if (sessionInDb) {
-		throw new SessionConflictError(session.id);
+	const msg = await send(session, thread);
+	session.messageId = msg.id;
+
+	// Persist session
+	const key = buildSessionKey(session.guildId, session.channelId);
+	if ((await sessionsClient.exists(key)) === 1) {
+		throw new SessionConflictError(key);
 	}
-	const sessionJson = instanceToPlain(session);
-	await sessionsClient.json.set(session.id, '.', sessionJson);
+	await setSession(session);
+	console.info('start._createSession() ~ Persisted', key);
+
+	return session;
 };
 
 const _getErrorMessage = (e: Error): string => {
@@ -117,25 +131,30 @@ const _getErrorMessage = (e: Error): string => {
 };
 
 export const execute = async (interaction: CommandInteraction) => {
-	if (!interaction.isRepliable()) {
-		return;
-	}
-
-	const errorMsg = _validate(interaction);
+	const errorMsg = await _validate(interaction);
 	if (errorMsg) {
 		interaction.reply(errorMsg);
 		return;
 	}
 
-	const msg = await interaction.reply({
+	const startMsg = await interaction.reply({
 		content: 'Starting session!',
 		fetchReply: true,
 	});
+	const thread = await startMsg.startThread({
+		name: `${
+			(interaction.member as GuildMember).voice.channel.name
+		} voice channel`,
+		autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
+	});
 	try {
-		await _createAndPersistSession(interaction, msg.id);
-		await msg.pin();
+		await _createSession(interaction, thread);
+		console.debug(
+			'messageCache size: ' + interaction.channel.messages.cache.size,
+		);
 	} catch (e) {
 		console.error(e);
+		thread.delete();
 		interaction.editReply({
 			content: _getErrorMessage(e),
 		});

@@ -43,12 +43,10 @@ const gracefulShutdown = async () => {
 	await client.close();
 	console.info('clusterClient closed!');
 
-	await new Promise(() =>
-		setTimeout(() => {
-			console.info('Shutting down');
-			process.exit();
-		}, 10000),
-	);
+	setTimeout(() => {
+		console.info('Shutting down');
+		process.exit();
+	}, 5000);
 };
 
 process.on('SIGTERM', gracefulShutdown);
