@@ -12,8 +12,6 @@ import { getGreeting } from './user-message';
 import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
 import { endBtn } from '../loadable/buttons/end';
 
-export const END_BUTTON_ID = 'endBtn';
-
 // #region EMBEDS
 const timerStatusEmbed = (s: Session) => {
 	return new EmbedBuilder()

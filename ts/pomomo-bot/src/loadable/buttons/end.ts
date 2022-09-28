@@ -1,12 +1,12 @@
 import { getSession, sessionsClient } from '../../db/sessions-client';
 import { ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
-import { editEnd, END_BUTTON_ID } from '../../message/session-message';
+import { editEnd } from '../../message/session-message';
 
 export const BUTTON_ID = 'endBtn';
 
 export const endBtn = () => {
 	return new ButtonBuilder()
-		.setCustomId(END_BUTTON_ID)
+		.setCustomId(BUTTON_ID)
 		.setStyle(ButtonStyle.Danger)
 		.setLabel('End');
 };

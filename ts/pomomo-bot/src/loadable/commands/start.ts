@@ -156,7 +156,7 @@ export const execute = async (interaction: CommandInteraction) => {
 		console.error(e);
 		thread.delete();
 		interaction.editReply({
-			content: _getErrorMessage(e),
+			content: _getErrorMessage(e as Error),
 		});
 	}
 };
