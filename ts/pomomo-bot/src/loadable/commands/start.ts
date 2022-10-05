@@ -15,6 +15,8 @@ import {
 } from '../../db/sessions-client';
 import { Session } from '../../model/session/Session';
 import { send } from '../../message/session-message';
+import { joinVoiceChannel, VoiceConnectionStatus } from '@discordjs/voice';
+import { playStartResource } from '../../voice/audio-player';
 
 enum EOption {
 	POMODORO = 'pomodoro',
@@ -97,25 +99,21 @@ const _createSession = async (
 
 	const member = interaction.member as GuildMember;
 
-	const session = Session.init(
+	return Session.init(
 		settings,
 		interaction.guildId,
 		thread.id,
 		member.voice.channelId,
 	);
+};
 
-	const msg = await send(session, thread);
-	session.messageId = msg.id;
-
-	// Persist session
+const _persistSession = async (session: Session) => {
 	const key = buildSessionKey(session.guildId, session.channelId);
 	if ((await sessionsClient.exists(key)) === 1) {
 		throw new SessionConflictError(key);
 	}
 	await setSession(session);
 	console.info('start._createSession() ~ Persisted', key);
-
-	return session;
 };
 
 const _getErrorMessage = (e: Error): string => {
@@ -147,8 +145,14 @@ export const execute = async (interaction: CommandInteraction) => {
 		} voice channel`,
 		autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
 	});
+
+	let session: Session;
 	try {
-		await _createSession(interaction, thread);
+		session = await _createSession(interaction, thread);
+		const msg = await send(session, thread);
+		session.messageId = msg.id;
+		// there is no rollback handling
+		await _persistSession(session);
 		console.debug(
 			'messageCache size: ' + interaction.channel.messages.cache.size,
 		);
@@ -159,4 +163,11 @@ export const execute = async (interaction: CommandInteraction) => {
 			content: _getErrorMessage(e as Error),
 		});
 	}
+
+	const conn = joinVoiceChannel({
+		channelId: session.voiceChannelId,
+		guildId: session.guildId,
+		adapterCreator: interaction.guild.voiceAdapterCreator,
+	});
+	playStartResource([conn]).catch(console.error);
 };

@@ -4,6 +4,7 @@
 
 - npm v8.19.1
 - node v18.9.0
+- ffmpeg
 
 ## Deployment:
 

@@ -15,14 +15,19 @@
 	"author": "benjinguyen",
 	"license": "ISC",
 	"dependencies": {
+		"@discordjs/opus": "^0.8.0",
 		"@discordjs/rest": "^1.1.0",
+		"@discordjs/voice": "^0.11.0",
 		"class-transformer": "^0.5.1",
 		"config": "^3.3.8",
+		"denque": "^2.1.0",
 		"discord-cross-hosting": "^2.3.2",
 		"discord-hybrid-sharding": "^1.7.4",
 		"discord.js": "^14.3.0",
+		"libsodium-wrappers": "^0.7.10",
 		"redis": "^4.3.1",
 		"reflect-metadata": "^0.1.13",
+		"sodium": "^3.0.2",
 		"typescript": "^4.8.3"
 	},
 	"devDependencies": {

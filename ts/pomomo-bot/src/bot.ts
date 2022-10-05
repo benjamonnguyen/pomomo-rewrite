@@ -59,7 +59,7 @@ discordClient.on('warn', (data) => console.warn('discordClient warn: ' + data));
 discordClient.on('cacheSweep', (data) => console.info('cacheSweep: ' + data));
 discordClient.once('ready', (client) => {
 	console.info(
-		'discordClient ready: ' + JSON.stringify(client.application, null, 2),
+		'discordClient ready: ' + JSON.stringify(client.options, null, 2),
 	);
 });
 discordClient.on('shardReady', (data) => console.info('shardReady: ' + data));
@@ -73,6 +73,7 @@ discordClient.on('shardError', (data) => console.error('shardError: ' + data));
 loadCommands(discordClient);
 loadButtons(discordClient);
 discordClient.login(config.get('bot.token'));
+// TODO can just do this in sessions-client.ts
 sessionsClient.connect();
 
 const gracefulShutdown = () => {
@@ -86,6 +87,10 @@ const gracefulShutdown = () => {
 	} catch (e) {
 		console.error(e);
 	}
+	setTimeout(() => {
+		console.info('Shutting down');
+		process.exit();
+	}, 5000);
 };
 
 process.on('SIGTERM', gracefulShutdown);

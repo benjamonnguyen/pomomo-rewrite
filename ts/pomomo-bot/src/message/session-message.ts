@@ -22,15 +22,11 @@ const timerStatusEmbed = (s: Session) => {
 
 const sessionSettingsEmbed = (s: Session) => {
 	const intervalSettings = s.settings.intervalSettings;
-	return new EmbedBuilder()
-		.setTitle('Session Settings')
-		.setColor(Colors.Orange)
-		.setDescription(
-			`Pomodoro: ${intervalSettings.pomodoro} min
-    Short break: ${intervalSettings.shortBreak} min
+	return new EmbedBuilder().setTitle('Session Settings').setColor(Colors.Orange)
+		.setDescription(`Pomodoro: ${intervalSettings.pomodoro} min
+		Short break: ${intervalSettings.shortBreak} min
     Long break: ${intervalSettings.longBreak} min
-    Intervals: ${intervalSettings.intervals}`,
-		);
+    Intervals: ${intervalSettings.intervals}`);
 };
 
 // const sessionStatsEmbed = (s: Session) => {
@@ -80,3 +76,5 @@ export const editEnd = async (s: Session, msg: Message) => {
 		components: [],
 	});
 };
+
+// TODO build(): MessageOptions
