@@ -2,18 +2,18 @@ import 'reflect-metadata';
 import config from 'config';
 import {
 	Client,
-	GatewayIntentBits,
 	CommandInteraction,
 	ClientOptions,
 	Interaction,
 	ButtonInteraction,
+	GatewayIntentBits,
 } from 'discord.js';
 import crossHosting from 'discord-cross-hosting';
 import Cluster from 'discord-hybrid-sharding';
 import { sessionsClient } from './db/sessions-client';
 import { loadCommands, loadButtons } from './loadable/loader';
 
-export class DiscordClient extends Client {
+export class MyDiscordClient extends Client {
 	commands: Map<string, (interaction: CommandInteraction) => Promise<void>>;
 	buttons: Map<string, (interaction: ButtonInteraction) => Promise<void>>;
 	cluster?: Cluster.Client;
@@ -28,20 +28,23 @@ export class DiscordClient extends Client {
 			this.machine = new crossHosting.Shard(this.cluster);
 		}
 	}
+
+	public toJSON(): unknown {
+		return { application: this.application, options: this.options };
+	}
 }
 
 // #region SETUP
-let discordClient: DiscordClient;
-console.info(`IS_CLUSTERED: ${process.env.IS_CLUSTERED}`);
+let discordClient: MyDiscordClient;
 const INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates];
 if (process.env.IS_CLUSTERED) {
-	discordClient = new DiscordClient({
+	discordClient = new MyDiscordClient({
 		intents: INTENTS,
-		shards: Cluster.Client.getInfo().SHARD_LIST,
 		shardCount: Cluster.Client.getInfo().TOTAL_SHARDS,
+		shards: Cluster.Client.getInfo().SHARD_LIST,
 	});
 } else {
-	discordClient = new DiscordClient(
+	discordClient = new MyDiscordClient(
 		{
 			intents: INTENTS,
 		},
@@ -56,25 +59,7 @@ discordClient.on('warn', (data) => console.warn('discordClient warn: ' + data));
 discordClient.on('cacheSweep', (data) => console.info('cacheSweep: ' + data));
 discordClient.once('ready', (client) => {
 	console.info(
-		'discordClient ready: ' +
-			JSON.stringify(
-				client,
-				(k, v) =>
-					new Set([
-						'users',
-						'guilds',
-						'channels',
-						'shard',
-						'rest',
-						'commands',
-						'buttons',
-						'user',
-						'voice',
-					]).has(k)
-						? undefined
-						: v,
-				2,
-			),
+		'discordClient ready: ' + JSON.stringify(client.options, null, 2),
 	);
 });
 discordClient.on('shardReady', (data) => console.info('shardReady: ' + data));
@@ -88,6 +73,7 @@ discordClient.on('shardError', (data) => console.error('shardError: ' + data));
 loadCommands(discordClient);
 loadButtons(discordClient);
 discordClient.login(config.get('bot.token'));
+// TODO can just do this in sessions-client.ts
 sessionsClient.connect();
 
 const gracefulShutdown = () => {
@@ -101,6 +87,10 @@ const gracefulShutdown = () => {
 	} catch (e) {
 		console.error(e);
 	}
+	setTimeout(() => {
+		console.info('Shutting down');
+		process.exit();
+	}, 5000);
 };
 
 process.on('SIGTERM', gracefulShutdown);

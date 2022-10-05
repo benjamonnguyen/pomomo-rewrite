@@ -7,5 +7,5 @@
 			"*": ["../node_modules/*", "types/*"]
 		}
 	},
-	"include": ["**/*.ts"]
+	"include": ["**/*.ts", "src/test.js"]
 }

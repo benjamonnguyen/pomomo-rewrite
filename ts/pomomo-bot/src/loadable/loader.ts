@@ -1,10 +1,10 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'url';
-import { DiscordClient } from '../bot';
+import { MyDiscordClient } from '../bot';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export const loadCommands = (client: DiscordClient) => {
+export const loadCommands = (client: MyDiscordClient) => {
 	const commandsPath = path.join(__dirname, 'commands');
 	const commandFiles = fs
 		.readdirSync(commandsPath)
@@ -23,7 +23,7 @@ export const loadCommands = (client: DiscordClient) => {
 	}
 };
 
-export const loadButtons = (client: DiscordClient) => {
+export const loadButtons = (client: MyDiscordClient) => {
 	const buttonsPath = path.join(__dirname, 'buttons');
 	const buttonFiles = fs
 		.readdirSync(buttonsPath)
