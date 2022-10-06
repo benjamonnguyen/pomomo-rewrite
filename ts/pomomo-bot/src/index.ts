@@ -3,6 +3,9 @@ import pkg from 'discord-cross-hosting';
 const { Client } = pkg;
 import Cluster from 'discord-hybrid-sharding';
 import path from 'node:path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Client setup
 const client = new Client({
@@ -13,17 +16,16 @@ const client = new Client({
 	rollingRestarts: true,
 });
 client.on('debug', console.debug);
-client.on('error', console.error);
-client.on('bridgeRequest', console.info);
+client.on('error', (e) => console.error('clusterClient error:', e));
+client.connect();
 
 // Manager setup
-const botPath = path.join('dist', 'bot.js');
+const botPath = path.join(__dirname, 'bot.js');
 const manager = new Cluster.Manager(botPath, {
 	execArgv: ['--experimental-modules', '--es-module-specifier-resolution=node'],
 });
 manager.on('debug', console.debug);
 
-client.connect();
 client
 	.requestShardData()
 	.then((data) => {
@@ -46,7 +48,7 @@ const gracefulShutdown = async () => {
 	setTimeout(() => {
 		console.info('Shutting down');
 		process.exit();
-	}, 5000);
+	}, 2000);
 };
 
 process.on('SIGTERM', gracefulShutdown);

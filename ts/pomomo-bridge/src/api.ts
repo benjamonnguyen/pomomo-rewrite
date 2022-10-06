@@ -7,7 +7,7 @@ import {
 	ECommand,
 	CommandMessage,
 	TimerUpdatePayload,
-} from '../../common/api/command';
+} from '../../common/src/command';
 import bridge from './bridge';
 
 export const app = initializeExpressApp();
@@ -16,15 +16,13 @@ app.put('/timer', (req, res) => {
 	const commands: CommandMessage[] = [];
 	req.body.forEach(
 		(c: { targetGuildId: string; payload: TimerUpdatePayload }) =>
-			commands.push({
-				targetGuildId: c.targetGuildId as string,
-				payload: c.payload as TimerUpdatePayload,
-				commandType: ECommand.TIMER_UPDATE,
-			}),
+			commands.push(
+				new CommandMessage(ECommand.TIMER_UPDATE, c.payload, c.targetGuildId),
+			),
 	);
 	bridge
 		.sendCommands(commands)
-		.then((e) => res.send(e))
+		.then(() => res.send())
 		.catch((e) => res.send(e));
 });
 

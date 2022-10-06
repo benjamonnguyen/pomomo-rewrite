@@ -1,6 +1,6 @@
 import config from 'config';
-import { Bridge, BridgeClient, BridgeOptions } from 'discord-cross-hosting';
-import { CommandMessage } from '../../common/api/command';
+import { Bridge, BridgeOptions } from 'discord-cross-hosting';
+import { CommandMessage } from '../../common/src/command';
 import { shardIdForGuildId } from 'discord-hybrid-sharding';
 
 class MyBridge extends Bridge {
@@ -8,16 +8,15 @@ class MyBridge extends Bridge {
 		super(options);
 	}
 
-	async sendCommands(messages: CommandMessage[]) {
-		const clientIdToMessages: Map<string, CommandMessage[]> = new Map();
-		this.clients.forEach((client, _) => clientIdToMessages.set(client.id, []));
+	async sendCommands(commands: CommandMessage[]) {
+		const clientIdToCommands: Map<string, CommandMessage[]> = new Map();
+		this.clients.forEach((client, _) => clientIdToCommands.set(client.id, []));
 
-		for (const msg of messages) {
+		for (const msg of commands) {
 			const internalShard = shardIdForGuildId(
 				msg.targetGuildId,
 				this.totalShards as number,
 			);
-			console.log(this.clients.values());
 			const targetClient = Array.from(this.clients.values()).find((x) =>
 				x?.shardList?.flat()?.includes(internalShard),
 			);
@@ -31,16 +30,17 @@ class MyBridge extends Bridge {
 			if (!msg.options) msg.options = {};
 			msg.options.shard = internalShard;
 
-			clientIdToMessages.get(targetClient.id).push(msg);
+			clientIdToCommands.get(targetClient.id).push(msg);
 		}
 
-		const promises: Promise<void>[] = [];
+		const promises: Promise<any>[] = [];
 		this.clients.forEach((client) => {
-			const msgs = clientIdToMessages.get(client.id);
+			const cmds = clientIdToCommands.get(client.id);
 			console.debug(
-				`bridge.sendCommands() ~ sending ${msgs.length} commands to clientId ${client.id}`,
+				`bridge.sendCommands() ~ sending ${cmds.length} commands to clientId ${client.id}`,
 			);
-			promises.push(client.send(msgs));
+			const payload = { guildId: cmds[0].targetGuildId, commands: cmds };
+			promises.push(this.requestToGuild(payload));
 		});
 
 		return Promise.allSettled(promises);

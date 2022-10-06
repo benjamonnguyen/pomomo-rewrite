@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"description": "",
 	"contributors": [],
-	"main": "dist/index.js",
+	"main": "dist/pomomo-bot/src/index.js",
 	"type": "module",
 	"scripts": {
 		"dev": "export IS_CLUSTERED=true && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",

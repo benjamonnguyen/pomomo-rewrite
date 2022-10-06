@@ -1,21 +1,26 @@
 import {
 	CommandMessage,
 	ECommand,
-	TimerUpdatePayload,
-} from '../../../common/api/command';
+} from '../../../common/src/command';
 
-const handle = (commandMsg: CommandMessage) => {
-	switch (commandMsg.commandType) {
-		case ECommand.TIMER_UPDATE:
-			return handleTimerUpdate(commandMsg.payload);
-		default:
-			throw `handler not implemented for command: ${commandMsg.commandType}`;
-	}
+const handle = (commands: CommandMessage[]) => {
+	const promises: Promise<void>[] = [];
+	commands.forEach((c) => {
+		switch (c.commandType) {
+			case ECommand.TIMER_UPDATE:
+				promises.push(handleTimerUpdate(c));
+				break;
+			default:
+				console.error(`handler not implemented for command: ${c.commandType}`);
+		}
+	});
+
+	return Promise.allSettled(promises);
 };
 
-function handleTimerUpdate(payload: TimerUpdatePayload) {
-	console.debug('command.handleTimerUpdate()');
-	console.log(payload);
+function handleTimerUpdate(command: CommandMessage) {
+	console.debug('command.handleTimerUpdate() ~', command.payload);
+	return Promise.resolve();
 }
 
 export default handle;

@@ -12,6 +12,7 @@ import crossHosting from 'discord-cross-hosting';
 import Cluster from 'discord-hybrid-sharding';
 import { sessionsClient } from './db/sessions-client';
 import { loadCommands, loadButtons } from './loadable/loader';
+import handle from './handler/command';
 
 export class MyDiscordClient extends Client {
 	commands: Map<string, (interaction: CommandInteraction) => Promise<void>>;
@@ -51,7 +52,6 @@ if (process.env.IS_CLUSTERED) {
 		false,
 	);
 }
-// discordClient.on('debug', console.debug);
 discordClient.on('error', (data) =>
 	console.error('discordClient error: ' + data),
 );
@@ -90,13 +90,14 @@ const gracefulShutdown = () => {
 	setTimeout(() => {
 		console.info('Shutting down');
 		process.exit();
-	}, 5000);
+	}, 2000);
 };
 
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 // #endregion
 
+// TODO move to handler/
 // #region INTERACTION HANDLERS
 const handleCommandInteraction = async (cmdInteraction: CommandInteraction) => {
 	const execute = discordClient.commands.get(cmdInteraction.commandName);
@@ -151,5 +152,14 @@ discordClient.on('interactionCreate', (interaction: Interaction) => {
 // 	newVS.guild.voiceStates.cache.set(newVS.member.id, newVS);
 // });
 // #endregion
+
+discordClient.cluster.on('message', (msg) => {
+	if (!msg._sRequest) return;
+	if (msg.commands) {
+		handle(msg.commands)
+			.then((e) => msg.reply({}))
+			.catch((e) => msg.reply({ error: e }));
+	}
+});
 
 export {};

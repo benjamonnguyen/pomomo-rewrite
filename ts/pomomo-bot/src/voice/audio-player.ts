@@ -12,17 +12,8 @@ import Denque from 'denque';
 import { once, EventEmitter } from 'node:events';
 import path from 'node:path';
 import { createReadStream } from 'node:fs';
-import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const START_SOUND_PATH = path.join(
-	__dirname,
-	'..',
-	'..',
-	'resources',
-	'sound',
-	'start.ogg',
-);
+const START_SOUND_PATH = path.join('resources', 'sound', 'start.ogg');
 
 const minPoolSize: number = config.get('voice.audioPlayer.pool.minSize');
 const maxPoolSize: number = config.get('voice.audioPlayer.pool.maxSize');

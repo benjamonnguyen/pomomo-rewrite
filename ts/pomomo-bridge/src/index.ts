@@ -1,5 +1,5 @@
 import bridge from './bridge';
-// import { app } from './api';
+import { app } from './api';
 import config from 'config';
 
 const PORT = config.get('api.port');
@@ -8,7 +8,7 @@ bridge
 	.start()
 	.then((b) => console.info(`bridge started: ${JSON.stringify(b, null, 2)}`));
 
-// app.listen(PORT, () => console.info('expressApp listening on port', PORT));
+app.listen(PORT, () => console.info('expressApp listening on port', PORT));
 
 const gracefulShutdown = () => {
 	console.info('Starting graceful shutdown...');
