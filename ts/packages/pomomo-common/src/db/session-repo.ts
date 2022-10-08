@@ -10,6 +10,7 @@ export class SessionRepository {
 			url: url,
 		});
 		this._client.on('error', console.error);
+		this._client.once('ready', () => console.info('sessionClient ready!'));
 		this._client.connect();
 	}
 
@@ -26,9 +27,7 @@ export class SessionRepository {
 	async set(session: Session) {
 		return this._client.json
 			.set(session.id, '.', instanceToPlain(session))
-			.then(() =>
-				console.info('sessions-client ~ Set', session.id),
-			);
+			.then(() => console.info('sessions-client ~ Set', session.id));
 	}
 
 	async delete(sessionId: string) {

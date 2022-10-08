@@ -25,7 +25,7 @@ class Timer {
 		this.isRunning = !this.isRunning;
 	}
 
-	getRemainingTime = (resolution?: number): string => {
+	getTimeRemainingAsString = (resolution?: number): string => {
 		const h = Math.floor(this.remainingSeconds / 3600);
 		const m = Math.floor((this.remainingSeconds % 3600) / 60);
 		console.debug(
@@ -53,6 +53,15 @@ class Timer {
 
 		return res.join(' ');
 	};
+
+	calculateCurrentSecondsRemaining(): number {
+		return (
+			(this.lastUpdated.getTime() +
+				this.remainingSeconds * 1000 -
+				new Date().getTime()) /
+			1000
+		);
+	}
 }
 
 export default Timer;

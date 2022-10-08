@@ -17,7 +17,7 @@ const timerStatusEmbed = (s: Session) => {
 	return new EmbedBuilder()
 		.setTitle('Timer')
 		.setColor(Colors.DarkGreen)
-		.setDescription(s.timer.getRemainingTime());
+		.setDescription(s.timer.getTimeRemainingAsString());
 };
 
 const sessionSettingsEmbed = (s: Session) => {

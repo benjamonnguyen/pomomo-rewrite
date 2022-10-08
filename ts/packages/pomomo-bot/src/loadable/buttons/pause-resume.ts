@@ -21,8 +21,6 @@ export const execute = async (interaction: ButtonInteraction) => {
 	interaction.deferUpdate();
 	const session = await client.get(interaction.guildId, interaction.channelId);
 	session.timer.toggle();
-	// TODO idleFlag reset
-	session.idleFlag = false;
 	session.lastUpdated = new Date();
 
 	if (interaction.channel.isTextBased()) {

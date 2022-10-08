@@ -1,6 +1,6 @@
 import config from 'config';
 import { Bridge, BridgeOptions } from 'discord-cross-hosting';
-import { CommandMessage } from '../../packages/common/src/command';
+import { CommandMessage } from 'pomomo-common/src/command';
 import { shardIdForGuildId } from 'discord-hybrid-sharding';
 
 class MyBridge extends Bridge {
@@ -9,6 +9,7 @@ class MyBridge extends Bridge {
 	}
 
 	async sendCommands(commands: CommandMessage[]) {
+		console.debug('bridge.sendCommands() ~ count', commands.length);
 		const clientIdToCommands: Map<string, CommandMessage[]> = new Map();
 		this.clients.forEach((client, _) => clientIdToCommands.set(client.id, []));
 

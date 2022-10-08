@@ -7,7 +7,7 @@ import {
 	ECommand,
 	CommandMessage,
 	TimerUpdatePayload,
-} from '../../packages/common/src/command';
+} from 'pomomo-common/src/command';
 import bridge from './bridge';
 
 export const app = initializeExpressApp();
