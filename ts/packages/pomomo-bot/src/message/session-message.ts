@@ -9,10 +9,11 @@ import {
 	ActionRowBuilder,
 	TextBasedChannel,
 } from 'discord.js';
-import { getGreeting } from './user-message';
+import { getFarewell, getGreeting } from './user-message';
 import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
 import { endBtn } from '../loadable/buttons/end';
 import discordClient from '../bot';
+import { Manager } from 'discord-hybrid-sharding';
 
 const RESOLUTION_M = config.get('session.refreshRateM') as number;
 
@@ -55,18 +56,17 @@ const buttonsActionRow = (s: Session) => {
 
 export const send = async (s: Session, channel: TextBasedChannel) => {
 	console.debug('session-message.send() ~ channelId', channel.id);
-	return channel
-		.send({
-			content: getGreeting(),
-			embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-			components: [buttonsActionRow(s)],
-		});
+	return channel.send({
+		content: getGreeting(),
+		embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
+		components: [buttonsActionRow(s)],
+	});
 };
 
 export const update = async (s: Session) => {
 	console.debug('session-message.update() ~', s.id);
 
-	return (await discordClient.fetchMessage(s))
+	return (await discordClient.fetchTimerMsg(s))
 		.edit({
 			embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
 			components: [buttonsActionRow(s)],
@@ -74,12 +74,14 @@ export const update = async (s: Session) => {
 		.catch(console.error);
 };
 
-export const editEnd = async (s: Session, msg: Message) => {
+export const editEnd = async (s: Session) => {
+	const msg = await discordClient.fetchTimerMsg(s);
 	const embed = timerStatusEmbed(s);
 	embed.setColor(Colors.Red).setDescription('Session ended!');
+	// TODO stat msg in intialMsg
 	return msg.edit({
 		// TODO user-message.endMessage
-		content: 'Good job!',
+		content: getFarewell(),
 		// TODO sessionStatsEmbed
 		embeds: [embed],
 		components: [],

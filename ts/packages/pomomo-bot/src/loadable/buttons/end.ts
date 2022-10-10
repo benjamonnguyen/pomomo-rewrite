@@ -1,7 +1,6 @@
-import client from '../../db/session-repo';
+import sessionRepo from '../../db/session-repo';
 import { ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
 import { editEnd } from '../../message/session-message';
-import { SessionNotFoundError } from 'pomomo-common/src/db/session-repo';
 
 export const BUTTON_ID = 'endBtn';
 
@@ -14,16 +13,21 @@ export const endBtn = () => {
 
 export const execute = async (interaction: ButtonInteraction) => {
 	try {
-		const session = await client.get(
+		const session = await sessionRepo.get(
 			interaction.guildId,
 			interaction.channelId,
 		);
-		client.delete(session.id);
-		const msg = await interaction.channel.messages.fetch(session.messageId);
-		interaction.channel.messages.cache.delete(msg.id);
-		await editEnd(session, msg);
+		await editEnd(session);
+		sessionRepo.delete(session.id).catch(console.error);
+		setTimeout(async () => {
+			interaction.channel.delete().catch(console.error);
+			const channel = await interaction.guild.channels.fetch(session.voiceId);
+			channel.delete().catch(console.error);
+		}, 2000);
 	} catch (e) {
 		console.error('end.execute() ~', e);
 	}
-	interaction.reply({ content: 'See you again soon! 👋' });
+	interaction.reply({
+		content: 'This channel will be deleted in a few seconds...',
+	});
 };

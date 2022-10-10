@@ -25,24 +25,71 @@ export class SessionRepository {
 	}
 
 	async set(session: Session) {
+		if (
+			!(
+				session.guildId &&
+				session.threadId &&
+				session.voiceId &&
+				session.initialMsgId &&
+				session.timerMsgId
+			)
+		) {
+			throw new InvalidSessionError(session);
+		}
 		return this.client.json
 			.set(session.id, '.', instanceToPlain(session))
 			.then(() => console.info('sessions-client ~ Set', session.id));
 	}
 
 	async delete(sessionId: string) {
-		this.client
-			.del(sessionId)
-			.then(() => console.info('sessions-client ~ Deleted', sessionId));
+		const guildId = (await this.client.json.get(sessionId, {
+			path: '.guildId',
+		})) as string;
+		this.client.del(sessionId).then(() => {
+			this.incSessionCount(guildId, -1).catch((e) =>
+				console.error('sessions-client.delete()', e),
+			);
+			console.info('sessions-client ~ Deleted', sessionId);
+		});
+	}
+
+	async getSessionCount(guildId: string): Promise<number> {
+		return this.client.json
+			.get(buildGuildKey(guildId), {
+				path: '.sessionCount',
+			})
+			.then((count) => (count as number) || 0)
+			.catch((e) => {
+				console.error('session-repo.getSessionCount()', e);
+				return -1;
+			});
+	}
+
+	async incSessionCount(guildId: string, by: number): Promise<number> {
+		if ((await this.getSessionCount(guildId)) < 1) {
+			await this.client.json.set(buildGuildKey(guildId), '.', {
+				sessionCount: 1,
+			});
+			return 1;
+		}
+
+		return (await this.client.json.numIncrBy(
+			buildGuildKey(guildId),
+			'.sessionCount',
+			by,
+		)) as number;
 	}
 }
 
-export const buildSessionKey = (guildId: string, channelId: string): string => {
+export function buildSessionKey(guildId: string, channelId: string): string {
 	return `session:g:${guildId}c:${channelId}`;
-};
+}
+
+export function buildGuildKey(guildId: string): string {
+	return `guild:${guildId}`;
+}
 
 export class SessionConflictError extends Error {
-	message: string;
 	userMessage = 'Session already exists for this channel';
 
 	constructor(sessionId: string) {
@@ -52,10 +99,15 @@ export class SessionConflictError extends Error {
 }
 
 export class SessionNotFoundError extends Error {
-	message: string;
-
 	constructor(sessionId: string) {
 		super();
 		this.message = `Session not found for id: ${sessionId}`;
+	}
+}
+
+export class InvalidSessionError extends Error {
+	constructor(session: Session) {
+		super();
+		this.message = JSON.stringify(session);
 	}
 }

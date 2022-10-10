@@ -1,7 +1,7 @@
 import { SessionSettings } from '../settings/session-settings';
 import Timer from '../timer/Timer';
 import { Type } from 'class-transformer';
-import { buildSessionKey } from '../../db/session-repo';
+import { buildSessionKey, InvalidSessionError } from '../../db/session-repo';
 
 const IDLE_TIMEOUT_HOUR = 1;
 const PREMIUM_IDLE_TIMEOUT_HOUR = 24;
@@ -14,10 +14,11 @@ export enum ESessionState {
 
 export class Session {
 	guildId: string;
-	channelId: string;
-	voiceChannelId: string;
+	threadId: string;
+	voiceId: string;
 	// #userId?: number; TODO allow DM sessions
-	messageId: string;
+	initialMsgId: string;
+	timerMsgId: string;
 	state = ESessionState.POMODORO;
 	premium: boolean;
 	@Type(() => Date) idleCheck?: Date;
@@ -25,13 +26,7 @@ export class Session {
 	@Type(() => Timer) timer: Timer;
 	@Type(() => Date) lastUpdated = new Date();
 
-	static init(
-		settings: SessionSettings,
-		guildId: string,
-		channelId: string,
-		voiceChannelId: string,
-		premium = false,
-	) {
+	static init(settings: SessionSettings, guildId: string, premium = false) {
 		const session = new Session();
 		// if (!userId && (!guildId || !channelId)) {
 		// 	throw 'Either userId or guildId and channelId must be provided';
@@ -39,8 +34,6 @@ export class Session {
 		// TODO check that msg and channels still exist else end
 
 		session.guildId = guildId;
-		session.channelId = channelId;
-		session.voiceChannelId = voiceChannelId;
 		// this.#userId = userId;
 		session.premium = premium;
 		session.settings = settings;
@@ -50,7 +43,7 @@ export class Session {
 	}
 
 	get id() {
-		return buildSessionKey(this.guildId, this.channelId);
+		return buildSessionKey(this.guildId, this.threadId);
 	}
 
 	isIdle() {

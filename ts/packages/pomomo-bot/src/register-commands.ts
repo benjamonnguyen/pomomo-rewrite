@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 const commands = [];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const commandsPath = path.join(__dirname, 'commands');
+const commandsPath = path.join(__dirname, 'loadable', 'commands');
 const commandFiles = fs
 	.readdirSync(commandsPath)
 	.filter((p) => p.endsWith('.js'));

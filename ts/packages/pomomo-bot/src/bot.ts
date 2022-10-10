@@ -8,6 +8,7 @@ import {
 	ButtonInteraction,
 	GatewayIntentBits,
 	TextBasedChannel,
+	AnyThreadChannel,
 } from 'discord.js';
 import crossHosting from 'discord-cross-hosting';
 import Cluster from 'discord-hybrid-sharding';
@@ -32,10 +33,20 @@ export class MyDiscordClient extends Client {
 		}
 	}
 
-	public async fetchMessage(session: Session) {
+	public async fetchTimerMsg(session: Session) {
 		const guild = await this.guilds.fetch(session.guildId);
-		const channel = await guild.channels.fetch(session.channelId) as TextBasedChannel;
-		return channel.messages.fetch(session.messageId);
+		const channel = (await guild.channels.fetch(
+			session.threadId,
+		)) as TextBasedChannel;
+		return channel.messages.fetch(session.timerMsgId);
+	}
+
+	public async fetchInitalMsg(session: Session) {
+		const guild = await this.guilds.fetch(session.guildId);
+		const thread = (await guild.channels.fetch(
+			session.threadId,
+		)) as AnyThreadChannel;
+		return thread.parent.messages.fetch(session.initialMsgId);
 	}
 
 	public toJSON(): unknown {

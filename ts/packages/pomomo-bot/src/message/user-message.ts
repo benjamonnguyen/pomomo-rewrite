@@ -19,6 +19,11 @@ const idleChecks = [
 	'Cool beans! :beans:',
 ];
 
+const farewells = [
+	'See you again soon! 👋',
+	'Goodbye! 👋'
+]
+
 const getRandom = (messages: string[]): string => {
 	return messages.at(Math.floor(Math.random() * messages.length));
 };
@@ -33,4 +38,8 @@ export const getEncouragements = (): string => {
 
 export const getIdleCheck = (): string => {
 	return getRandom(idleChecks);
+};
+
+export const getFarewell = (): string => {
+	return getRandom(farewells);
 };
