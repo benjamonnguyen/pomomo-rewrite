@@ -6,7 +6,7 @@ import morgan from 'morgan';
 import {
 	ECommand,
 	CommandMessage,
-	TimerUpdatePayload,
+	UpdateTimerPayload,
 } from 'pomomo-common/src/command';
 import bridge from './bridge';
 
@@ -15,9 +15,9 @@ export const app = initializeExpressApp();
 app.put('/timer', (req, res) => {
 	const commands: CommandMessage[] = [];
 	req.body.forEach(
-		(c: { targetGuildId: string; payload: TimerUpdatePayload }) =>
+		(c: { targetGuildId: string; payload: UpdateTimerPayload }) =>
 			commands.push(
-				new CommandMessage(ECommand.TIMER_UPDATE, c.payload, c.targetGuildId),
+				new CommandMessage(ECommand.UPDATE_TIMER, c.payload, c.targetGuildId),
 			),
 	);
 	bridge

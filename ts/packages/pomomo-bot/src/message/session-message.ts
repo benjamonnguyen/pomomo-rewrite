@@ -1,3 +1,4 @@
+import config from 'config';
 import { Session } from 'pomomo-common/src/model/session';
 import {
 	EmbedBuilder,
@@ -11,13 +12,19 @@ import {
 import { getGreeting } from './user-message';
 import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
 import { endBtn } from '../loadable/buttons/end';
+import discordClient from '../bot';
+
+const RESOLUTION_M = config.get('session.refreshRateM') as number;
 
 // #region EMBEDS
 const timerStatusEmbed = (s: Session) => {
+	const timeRemaining = s.premium
+		? s.timer.getTimeRemainingAsString()
+		: s.timer.getTimeRemainingAsString(RESOLUTION_M);
 	return new EmbedBuilder()
 		.setTitle('Timer')
 		.setColor(Colors.DarkGreen)
-		.setDescription(s.timer.getTimeRemainingAsString());
+		.setDescription(timeRemaining);
 };
 
 const sessionSettingsEmbed = (s: Session) => {
@@ -47,22 +54,24 @@ const buttonsActionRow = (s: Session) => {
 };
 
 export const send = async (s: Session, channel: TextBasedChannel) => {
-	const msg = await channel.send({
-		content: getGreeting(),
-		embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-		components: [buttonsActionRow(s)],
-	});
-	console.debug('session-message.send():', msg.id);
-	return msg;
+	console.debug('session-message.send() ~ channelId', channel.id);
+	return channel
+		.send({
+			content: getGreeting(),
+			embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
+			components: [buttonsActionRow(s)],
+		});
 };
 
-export const edit = async (s: Session, msg: Message) => {
-	return msg
+export const update = async (s: Session) => {
+	console.debug('session-message.update() ~', s.id);
+
+	return (await discordClient.fetchMessage(s))
 		.edit({
 			embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
 			components: [buttonsActionRow(s)],
 		})
-		.then(() => console.debug('session-message.edit():', msg.id));
+		.catch(console.error);
 };
 
 export const editEnd = async (s: Session, msg: Message) => {

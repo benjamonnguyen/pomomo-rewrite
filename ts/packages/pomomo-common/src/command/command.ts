@@ -1,5 +1,5 @@
 export enum ECommand {
-	TIMER_UPDATE,
+	UPDATE_TIMER,
 }
 
 export class CommandMessage {
@@ -21,6 +21,8 @@ export class CommandMessage {
 	}
 }
 
-export interface IPayload {}
+export interface IPayload {
+	channelId: string;
+}
 
-export interface TimerUpdatePayload {}
+export interface UpdateTimerPayload extends IPayload {}

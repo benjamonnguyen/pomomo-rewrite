@@ -8,11 +8,8 @@ import {
 } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
 import { SessionSettingsBuilder } from 'pomomo-common/src/model/settings/session-settings';
-import {
-	buildSessionKey,
-	SessionConflictError,
-} from 'pomomo-common/src/db/session-repo';
-import client from '../../db/session-repo';
+import { SessionConflictError } from 'pomomo-common/src/db/session-repo';
+import sessionRepo from '../../db/session-repo';
 import { send } from '../../message/session-message';
 import { joinVoiceChannel } from '@discordjs/voice';
 import { playStartResource } from '../../voice/audio-player';
@@ -106,15 +103,6 @@ const _createSession = async (
 	);
 };
 
-const _persistSession = async (session: Session) => {
-	const key = buildSessionKey(session.guildId, session.channelId);
-	if ((await client._client.exists(key)) === 1) {
-		throw new SessionConflictError(key);
-	}
-	await client.set(session);
-	console.info('start._createSession() ~ Persisted', key);
-};
-
 const _getErrorMessage = (e: Error): string => {
 	let eMsg: string;
 	if (e instanceof SessionConflictError) {
@@ -151,7 +139,7 @@ export const execute = async (interaction: CommandInteraction) => {
 		const msg = await send(session, thread);
 		session.messageId = msg.id;
 		// there is no rollback handling
-		await _persistSession(session);
+		await sessionRepo.set(session);
 		console.debug(
 			'messageCache size: ' + interaction.channel.messages.cache.size,
 		);

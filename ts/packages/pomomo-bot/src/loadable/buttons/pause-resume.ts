@@ -6,7 +6,7 @@ import {
 } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
 import client from '../../db/session-repo';
-import { edit } from '../../message/session-message';
+import { update } from '../../message/session-message';
 
 export const BUTTON_ID = 'playPauseBtn';
 
@@ -24,9 +24,7 @@ export const execute = async (interaction: ButtonInteraction) => {
 	session.lastUpdated = new Date();
 
 	if (interaction.channel.isTextBased()) {
-		const textChannel = interaction.channel as TextChannel;
-		const msg = await textChannel.messages.fetch(session.messageId);
-		edit(session, msg);
+		update(session);
 	}
 
 	await client.set(session);

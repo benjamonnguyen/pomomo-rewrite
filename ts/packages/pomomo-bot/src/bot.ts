@@ -7,12 +7,14 @@ import {
 	Interaction,
 	ButtonInteraction,
 	GatewayIntentBits,
+	TextBasedChannel,
 } from 'discord.js';
 import crossHosting from 'discord-cross-hosting';
 import Cluster from 'discord-hybrid-sharding';
 import { loadCommands, loadButtons } from './loadable/loader';
-import handle from './handler/command';
+import handle from './handler/command/command';
 import sessionRepo from './db/session-repo';
+import { Session } from 'pomomo-common/src/model/session';
 
 export class MyDiscordClient extends Client {
 	commands: Map<string, (interaction: CommandInteraction) => Promise<void>>;
@@ -28,6 +30,12 @@ export class MyDiscordClient extends Client {
 			this.cluster = new Cluster.Client(this);
 			this.machine = new crossHosting.Shard(this.cluster);
 		}
+	}
+
+	public async fetchMessage(session: Session) {
+		const guild = await this.guilds.fetch(session.guildId);
+		const channel = await guild.channels.fetch(session.channelId) as TextBasedChannel;
+		return channel.messages.fetch(session.messageId);
 	}
 
 	public toJSON(): unknown {
@@ -75,7 +83,7 @@ loadButtons(discordClient);
 discordClient.login(config.get('bot.token'));
 
 const gracefulShutdown = () => {
-	sessionRepo._client
+	sessionRepo.client
 		.quit()
 		.then(() => console.info('sessionsClient quitted!'))
 		.catch(console.error);
@@ -162,4 +170,4 @@ if (discordClient.cluster) {
 	});
 }
 
-export {};
+export default discordClient;

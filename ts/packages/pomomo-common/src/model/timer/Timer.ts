@@ -25,12 +25,13 @@ class Timer {
 		this.isRunning = !this.isRunning;
 	}
 
-	getTimeRemainingAsString = (resolution?: number): string => {
-		const h = Math.floor(this.remainingSeconds / 3600);
-		const m = Math.floor((this.remainingSeconds % 3600) / 60);
+	getTimeRemainingAsString = (resolutionM?: number): string => {
+		const secondsRemaining = this.calculateCurrentSecondsRemaining();
+		const h = Math.floor(secondsRemaining / 3600);
+		let m = Math.floor((secondsRemaining % 3600) / 60);
 		console.debug(
-			'Timer.getRemainingTime ~',
-			`t: ${this.remainingSeconds} h: ${h} m: ${m}`,
+			'Timer.getTimeRemainingAsString() ~',
+			`t: ${secondsRemaining} h: ${h} m: ${m}`,
 		);
 
 		if (h < 1 && m < 1) {
@@ -38,8 +39,9 @@ class Timer {
 		}
 
 		let res = [];
-		if (resolution) {
-			// TODO refreshRate
+		if (resolutionM) {
+			res.push('<');
+			m = Math.floor(resolutionM * Math.ceil(m / resolutionM));
 		}
 		if (h) {
 			res.push(h);

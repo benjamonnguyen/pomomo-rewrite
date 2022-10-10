@@ -3,20 +3,20 @@ import { plainToInstance, instanceToPlain } from 'class-transformer';
 import { Session } from '../model/session/Session';
 
 export class SessionRepository {
-	_client: RedisClientType;
+	client: RedisClientType;
 
 	constructor(url: string) {
-		this._client = createClient({
+		this.client = createClient({
 			url: url,
 		});
-		this._client.on('error', console.error);
-		this._client.once('ready', () => console.info('sessionClient ready!'));
-		this._client.connect();
+		this.client.on('error', console.error);
+		this.client.once('ready', () => console.info('sessionClient ready!'));
+		this.client.connect();
 	}
 
 	async get(guildId: string, channelId: string) {
 		const sessionKey = buildSessionKey(guildId, channelId);
-		const sessionInDb = await this._client.json.get(sessionKey);
+		const sessionInDb = await this.client.json.get(sessionKey);
 		console.debug('sessions-client ~ Got', sessionKey);
 		if (!sessionInDb) {
 			throw new SessionNotFoundError(sessionKey);
@@ -25,19 +25,19 @@ export class SessionRepository {
 	}
 
 	async set(session: Session) {
-		return this._client.json
+		return this.client.json
 			.set(session.id, '.', instanceToPlain(session))
 			.then(() => console.info('sessions-client ~ Set', session.id));
 	}
 
 	async delete(sessionId: string) {
-		this._client
+		this.client
 			.del(sessionId)
 			.then(() => console.info('sessions-client ~ Deleted', sessionId));
 	}
 }
 
-export const buildSessionKey = (guildId: string, channelId: string) => {
+export const buildSessionKey = (guildId: string, channelId: string): string => {
 	return `session:g:${guildId}c:${channelId}`;
 };
 
