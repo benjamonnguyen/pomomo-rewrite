@@ -25,6 +25,12 @@ export class SessionRepository {
 	}
 
 	async set(session: Session) {
+		return this.client.json
+			.set(session.id, '.', instanceToPlain(session))
+			.then(() => console.info('sessions-client ~ Set', session.id));
+	}
+
+	async insert(session: Session) {
 		if (
 			!(
 				session.guildId &&
@@ -36,9 +42,17 @@ export class SessionRepository {
 		) {
 			throw new InvalidSessionError(session);
 		}
-		return this.client.json
-			.set(session.id, '.', instanceToPlain(session))
-			.then(() => console.info('sessions-client ~ Set', session.id));
+
+		try {
+			await this.client.json.set(session.id, '.', instanceToPlain(session), {
+				NX: true,
+			});
+		} catch (_) {
+			const e = new SessionConflictError(session.id);
+			console.error('session-repo.insert()', e);
+			throw e;
+		}
+		await this.incSessionCount(session.guildId, 1);
 	}
 
 	async delete(sessionId: string) {
@@ -67,9 +81,14 @@ export class SessionRepository {
 
 	async incSessionCount(guildId: string, by: number): Promise<number> {
 		if ((await this.getSessionCount(guildId)) < 1) {
-			await this.client.json.set(buildGuildKey(guildId), '.', {
-				sessionCount: 1,
-			});
+			await this.client.json.set(
+				buildGuildKey(guildId),
+				'.',
+				{
+					sessionCount: 0,
+				},
+				{ NX: true },
+			);
 			return 1;
 		}
 

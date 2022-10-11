@@ -178,9 +178,7 @@ export const execute = async (interaction: CommandInteraction) => {
 		const timerMsg = await send(session, thread);
 		timerMsg.pin().catch(console.error);
 		session.timerMsgId = timerMsg.id;
-		await sessionRepo
-			.set(session)
-			.then(() => sessionRepo.incSessionCount(session.guildId, 1));
+		await sessionRepo.insert(session);
 		await interaction.editReply(`Session started in <#${session.voiceId}>`);
 	} catch (e) {
 		console.error(e);
