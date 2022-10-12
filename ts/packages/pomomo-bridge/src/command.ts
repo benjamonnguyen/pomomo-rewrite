@@ -12,14 +12,14 @@ export function createUpdateTimerCmd(
 	}
 	return new CommandMessage(
 		ECommand.UPDATE_TIMER,
-		{ threadId: channelId } as Payload,
+		{ channelId: channelId } as Payload,
 		guildId,
 	);
 }
 
 export function createGoNextStateCmd(
 	guildId: string,
-	threadId: string,
+	channelId: string,
 ): CommandMessage {
 	for (const arg of arguments) {
 		if (!arg) {
@@ -29,7 +29,7 @@ export function createGoNextStateCmd(
 	}
 	return new CommandMessage(
 		ECommand.GO_NEXT_STATE,
-		{ threadId: threadId } as Payload,
+		{ channelId: channelId } as Payload,
 		guildId,
 	);
 }

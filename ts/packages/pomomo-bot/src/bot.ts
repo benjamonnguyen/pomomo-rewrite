@@ -12,12 +12,11 @@ import {
 	ButtonInteraction,
 	GatewayIntentBits,
 	TextBasedChannel,
-	AnyThreadChannel,
 } from 'discord.js';
 import crossHosting from 'discord-cross-hosting';
 import Cluster from 'discord-hybrid-sharding';
 import { loadCommands, loadButtons } from './loadable/loader';
-import handle from './handler/command/command';
+import handle from './handler/bridgecommand/bridge-command';
 import sessionRepo from './db/session-repo';
 import { Session } from 'pomomo-common/src/model/session';
 
@@ -38,20 +37,26 @@ export class MyDiscordClient extends Client {
 	}
 
 	public async fetchTimerMsg(session: Session) {
-		const guild = await this.guilds.fetch(session.guildId);
-		const channel = (await guild.channels.fetch(
-			session.threadId,
-		)) as TextBasedChannel;
-		return channel.messages.fetch(session.timerMsgId);
+		try {
+			const guild = await this.guilds.fetch(session.guildId);
+			const channel = (await guild.channels.fetch(
+				session.channelId,
+			)) as TextBasedChannel;
+			return channel.messages.fetch(session.timerMsgId);
+		} catch (e) {
+			console.error('MyDiscordClient.fetchTimerMsg()', e);
+			sessionRepo.delete(session.id).catch(console.error);
+			Promise.reject(e);
+		}
 	}
 
-	public async fetchInitalMsg(session: Session) {
-		const guild = await this.guilds.fetch(session.guildId);
-		const thread = (await guild.channels.fetch(
-			session.threadId,
-		)) as AnyThreadChannel;
-		return thread.parent.messages.fetch(session.initialMsgId);
-	}
+	// public async fetchInitalMsg(session: Session) {
+	// 	const guild = await this.guilds.fetch(session.guildId);
+	// 	const thread = (await guild.channels.fetch(
+	// 		session.channelId,
+	// 	)) as AnyThreadChannel;
+	// 	return thread.parent.messages.fetch(session.initialMsgId);
+	// }
 
 	public toJSON(): unknown {
 		return { application: this.application, options: this.options };
@@ -121,6 +126,16 @@ process.on('SIGINT', gracefulShutdown);
 // TODO move to handler/
 // #region INTERACTION HANDLERS
 const handleCommandInteraction = async (cmdInteraction: CommandInteraction) => {
+	const allowedGuilds = config.get('allowedGuilds') as string;
+	if (
+		!allowedGuilds.includes('*') &&
+		!allowedGuilds.includes(cmdInteraction.guildId)
+	) {
+		cmdInteraction.reply(
+			'This server does not have permission to use this bot',
+		);
+		return;
+	}
 	const execute = discordClient.commands.get(cmdInteraction.commandName);
 	if (!execute) {
 		console.error(
@@ -152,19 +167,25 @@ const handleButtonInteraction = async (btnInteraction: ButtonInteraction) => {
 		await execute(btnInteraction);
 	} catch (e) {
 		console.error(e);
-		await btnInteraction.reply({
-			// TODO better error message
-			content: 'There was an error while executing this button interaction!',
-			ephemeral: true,
-		});
+		btnInteraction
+			.reply({
+				// TODO better error message
+				content: 'There was an error while executing this button interaction!',
+				ephemeral: true,
+			})
+			.catch(console.error);
 	}
 };
 
 discordClient.on('interactionCreate', (interaction: Interaction) => {
 	if (interaction.isButton()) {
-		handleButtonInteraction(interaction as ButtonInteraction);
+		handleButtonInteraction(interaction as ButtonInteraction).catch(
+			console.error,
+		);
 	} else if (interaction.isCommand()) {
-		handleCommandInteraction(interaction as CommandInteraction);
+		handleCommandInteraction(interaction as CommandInteraction).catch(
+			console.error,
+		);
 	}
 });
 

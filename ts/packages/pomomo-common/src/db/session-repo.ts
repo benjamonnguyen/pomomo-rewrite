@@ -14,8 +14,8 @@ export class SessionRepository {
 		this.client.connect();
 	}
 
-	async get(guildId: string, threadId: string) {
-		const sessionKey = buildSessionKey(guildId, threadId);
+	async get(guildId: string, channelId: string) {
+		const sessionKey = buildSessionKey(guildId, channelId);
 		const sessionInDb = await this.client.json.get(sessionKey);
 		console.debug('sessions-client ~ Got', sessionKey);
 		if (!sessionInDb) {
@@ -31,15 +31,7 @@ export class SessionRepository {
 	}
 
 	async insert(session: Session) {
-		if (
-			!(
-				session.guildId &&
-				session.threadId &&
-				session.voiceId &&
-				session.initialMsgId &&
-				session.timerMsgId
-			)
-		) {
+		if (!(session.guildId && session.channelId && session.timerMsgId)) {
 			throw new InvalidSessionError(session);
 		}
 
@@ -53,6 +45,16 @@ export class SessionRepository {
 			console.error('session-repo.insert()', e);
 			throw e;
 		}
+		await this.client.json
+			.set(
+				buildGuildKey(session.guildId),
+				'.',
+				{
+					sessionCount: 0,
+				},
+				{ NX: true },
+			)
+			.catch(console.error);
 		await this.incSessionCount(session.guildId, 1);
 	}
 
@@ -82,8 +84,8 @@ export class SessionRepository {
 
 	async incSessionCount(guildId: string, by: number): Promise<number> {
 		const guildKey = buildGuildKey(guildId);
-		if (!(await this.client.json.get(guildKey))) {
-			this.client.json.set(guildKey, '.', { sessionCount: 1 });
+		if ((await this.client.json.get(guildKey)) < 1) {
+			this.client.json.set(guildKey, '.sessionCount', 1);
 			return 1;
 		}
 		return (await this.client.json.numIncrBy(
@@ -94,9 +96,13 @@ export class SessionRepository {
 	}
 }
 
-export function buildSessionKey(guildId: string, threadId: string, premium = false): string {
+export function buildSessionKey(
+	guildId: string,
+	channelId: string,
+	premium = false,
+): string {
 	const prefix = premium ? 'session:premium' : 'session';
-	return `${prefix}#g${guildId}c${threadId}`;
+	return `${prefix}#g${guildId}c${channelId}`;
 }
 
 export function buildGuildKey(guildId: string): string {

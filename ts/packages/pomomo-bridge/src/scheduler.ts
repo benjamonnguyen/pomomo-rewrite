@@ -28,31 +28,32 @@ export const job = new CronJob(
 			console.log('cron job ~ processing', key);
 			const json = await sessionRepo.client.json.get(key);
 			const session = plainToInstance(Session, json);
-			if (session.idleCheck) {
-				console.debug('idleCheck');
-				if ((new Date().getTime() - session.idleCheck.getTime()) / 60000) {
-					sessionRepo
-						.delete(session.id)
-						.then(() => console.warn('idleCheck timed out -', session.id))
-						.catch(console.error);
-				}
-				return;
-			}
-			if (session.isIdle()) {
-				console.debug('isIdle', session.id);
-				// return checkIdle();
-			} else if (!session.timer.isRunning) {
+			// if (session.idleCheck) {
+			// 	console.debug('idleCheck');
+			// 	if ((new Date().getTime() - session.idleCheck.getTime()) / 60000) {
+			// 		sessionRepo
+			// 			.delete(session.id)
+			// 			.then(() => console.warn('idleCheck timed out -', session.id))
+			// 			.catch(console.error);
+			// 	}
+			// 	return;
+			// }
+			// if (session.isIdle()) {
+			// 	console.debug('isIdle', session.id);
+			// 	return checkIdle();
+			// } else 
+			if (!session.timer.isRunning) {
 				console.debug('not running', session.id);
 			} else {
 				if (session.timer.calculateCurrentSecondsRemaining() <= 0) {
 					console.debug('goNextState', session.id);
-					const cmd = createGoNextStateCmd(session.guildId, session.threadId);
+					const cmd = createGoNextStateCmd(session.guildId, session.channelId);
 					if (cmd) {
 						commands.push(cmd);
 					}
 				} else {
 					console.debug('updateTimer', session.id);
-					const cmd = createUpdateTimerCmd(session.guildId, session.threadId);
+					const cmd = createUpdateTimerCmd(session.guildId, session.channelId);
 					if (cmd) {
 						commands.push(cmd);
 					}

@@ -21,7 +21,7 @@ export const execute = async (interaction: ButtonInteraction) => {
 		sessionRepo.delete(session.id).catch(console.error);
 		setTimeout(async () => {
 			interaction.channel.delete().catch(console.error);
-			const channel = await interaction.guild.channels.fetch(session.voiceId);
+			const channel = await interaction.guild.channels.fetch(session.channelId);
 			channel.delete().catch(console.error);
 		}, 2000);
 		interaction

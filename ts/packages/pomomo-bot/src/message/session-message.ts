@@ -8,6 +8,7 @@ import {
 	ActionRowBuilder,
 	TextBasedChannel,
 	bold,
+	Message,
 } from 'discord.js';
 import { getFarewell, getGreeting } from './user-message';
 import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
@@ -81,26 +82,37 @@ export const send = async (s: Session, channel: TextBasedChannel) => {
 export const update = async (s: Session) => {
 	console.debug('session-message.update() ~', s.id);
 
-	return (await discordClient.fetchTimerMsg(s))
-		.edit({
-			embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-			components: [buttonsActionRow(s)],
-		})
+	return discordClient
+		.fetchTimerMsg(s)
+		.then((msg) =>
+			(msg as Message<true>)
+				.edit({
+					embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
+					components: [buttonsActionRow(s)],
+				})
+				.catch(console.error),
+		)
 		.catch(console.error);
 };
 
 export const editEnd = async (s: Session) => {
-	const msg = await discordClient.fetchTimerMsg(s);
-	const embed = timerStatusEmbed(s);
-	embed.setColor(Colors.Red).setDescription('Session ended!');
-	// TODO stat msg in intialMsg
-	return msg.edit({
-		// TODO user-message.endMessage
-		content: getFarewell(),
-		// TODO sessionStatsEmbed
-		embeds: [embed],
-		components: [],
-	});
+	return discordClient
+		.fetchTimerMsg(s)
+		.then((msg) => {
+			const embed = timerStatusEmbed(s);
+			embed.setColor(Colors.Red).setDescription('Session ended!');
+			// TODO stat msg in intialMsg
+			return (msg as Message<true>)
+				.edit({
+					// TODO user-message.endMessage
+					content: getFarewell(),
+					// TODO sessionStatsEmbed
+					embeds: [embed],
+					components: [],
+				})
+				.catch(console.error);
+		})
+		.catch(console.error);
 };
 
 // TODO build(): MessageOptions

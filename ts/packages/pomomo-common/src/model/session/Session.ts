@@ -16,10 +16,8 @@ export enum ESessionState {
 
 export class Session {
 	guildId: string;
-	threadId: string;
-	voiceId: string;
+	channelId: string;
 	// #userId?: number; TODO allow DM sessions
-	initialMsgId: string;
 	timerMsgId: string;
 	state = ESessionState.POMODORO;
 	premium: boolean;
@@ -46,7 +44,7 @@ export class Session {
 	}
 
 	get id() {
-		return buildSessionKey(this.guildId, this.threadId);
+		return buildSessionKey(this.guildId, this.channelId);
 	}
 
 	isIdle() {

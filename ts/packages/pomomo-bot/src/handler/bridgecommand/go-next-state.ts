@@ -13,16 +13,16 @@ async function handle(command: CommandMessage): Promise<void> {
 	).voiceAdapterCreator;
 
 	sessionRepo
-		.get(command.targetGuildId, command.payload.threadId)
+		.get(command.targetGuildId, command.payload.channelId)
 		.then((session) => {
 			session.goNextState();
-      sessionRepo.set(session);
+			sessionRepo.set(session);
 			update(session).catch((e) =>
 				console.error('go-next-state.handle() ~', command, e),
 			);
 
 			const conn = joinVoiceChannel({
-				channelId: session.voiceId,
+				channelId: session.channelId,
 				guildId: session.guildId,
 				adapterCreator: voiceAdapterCreator,
 			});

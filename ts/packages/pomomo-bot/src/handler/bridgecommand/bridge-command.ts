@@ -17,7 +17,7 @@ const handle = (commands: CommandMessage[]) => {
 		}
 	});
 
-	return Promise.allSettled(promises);
+	return Promise.allSettled(promises).catch(console.error);
 };
 
 export default handle;

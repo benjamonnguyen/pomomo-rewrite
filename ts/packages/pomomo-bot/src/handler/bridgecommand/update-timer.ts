@@ -8,7 +8,7 @@ async function handle(command: CommandMessage): Promise<void> {
 	try {
 		const session = await sessionRepo.get(
 			command.targetGuildId,
-			command.payload.threadId,
+			command.payload.channelId,
 		);
 		if (
 			session.timer.isRunning &&
@@ -16,7 +16,6 @@ async function handle(command: CommandMessage): Promise<void> {
 		) {
 			update(session);
 		}
-		Promise.resolve();
 	} catch (e) {
 		return Promise.reject(e);
 	}

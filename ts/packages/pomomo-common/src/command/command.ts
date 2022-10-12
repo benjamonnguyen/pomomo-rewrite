@@ -23,5 +23,5 @@ export class CommandMessage {
 }
 
 export interface Payload {
-	threadId: string;
+	channelId: string;
 }

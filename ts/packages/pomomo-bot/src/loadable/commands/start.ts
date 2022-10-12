@@ -147,9 +147,8 @@ export const execute = async (interaction: CommandInteraction) => {
 		return;
 	}
 
-	const initialMsg = await interaction.reply({
+	interaction.reply({
 		content: 'Starting session!',
-		fetchReply: true,
 	});
 
 	const nameOpt = interaction.options.get(EOption.NAME);
@@ -159,26 +158,21 @@ export const execute = async (interaction: CommandInteraction) => {
 
 	let session: Session;
 	let voiceChannel: VoiceChannel;
-	let thread: AnyThreadChannel;
 	try {
 		session = await _createSession(interaction);
-		session.initialMsgId = initialMsg.id;
+		// session.initialMsgId = initialMsg.id;
 
 		voiceChannel = await _createVoiceChannel(interaction, name);
-		session.voiceId = voiceChannel.id;
+		session.channelId = voiceChannel.id;
 		const member = interaction.member as GuildMember;
 		await member.voice.member.voice
 			.setChannel(voiceChannel)
 			.catch((e) => console.error('start.execute() ~', e));
 
-		thread = await initialMsg.startThread({ name: name });
-		await thread.members.add(member).catch(console.error);
-		session.threadId = thread.id;
-
-		const timerMsg = await send(session, thread);
+		const timerMsg = await send(session, voiceChannel);
 		session.timerMsgId = timerMsg.id;
 		await sessionRepo.insert(session);
-		await interaction.editReply(`Session started in <#${session.voiceId}>`);
+		await interaction.editReply(`Session started in <#${session.channelId}>`);
 	} catch (e) {
 		console.error(e);
 		// rollback
@@ -194,14 +188,11 @@ export const execute = async (interaction: CommandInteraction) => {
 		if (session) {
 			promises.push(sessionRepo.delete(session.id));
 		}
-		if (thread) {
-			promises.push(thread.delete());
-		}
 		Promise.allSettled(promises);
 	}
 
 	const conn = joinVoiceChannel({
-		channelId: session.voiceId,
+		channelId: session.channelId,
 		guildId: session.guildId,
 		adapterCreator: interaction.guild.voiceAdapterCreator,
 	});
