@@ -1,16 +1,17 @@
 export enum ECommand {
 	UPDATE_TIMER,
+	GO_NEXT_STATE,
 }
 
 export class CommandMessage {
 	commandType: ECommand;
-	payload: IPayload;
+	payload: Payload;
 	targetGuildId: string;
 	options?: any;
 
 	constructor(
 		commandType: ECommand,
-		payload: IPayload,
+		payload: Payload,
 		targetGuildId: string,
 		options?: any,
 	) {
@@ -21,8 +22,6 @@ export class CommandMessage {
 	}
 }
 
-export interface IPayload {
-	channelId: string;
+export interface Payload {
+	threadId: string;
 }
-
-export interface UpdateTimerPayload extends IPayload {}

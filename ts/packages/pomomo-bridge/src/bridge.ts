@@ -53,7 +53,7 @@ const bridge = new MyBridge({
 	authToken: config.get('bridge.authToken'),
 	totalMachines: config.get('bridge.totalMachines'),
 	shardsPerCluster: config.get('bridge.shardsPerCluster'),
-	token: config.get('bridge.botToken'),
+	token: config.get('bot.token'),
 });
 bridge.on('debug', console.debug);
 bridge.on('clientMessage', console.debug);

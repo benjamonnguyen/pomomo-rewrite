@@ -2,11 +2,9 @@ import IntervalSettings from './IntervalSettings';
 import { Type } from 'class-transformer';
 
 export class SessionSettings {
-	volume: number;
 	@Type(() => IntervalSettings) intervalSettings: IntervalSettings;
 
-	constructor(volume = 10, intervalSettings = new IntervalSettings()) {
-		this.volume = volume;
+	constructor(intervalSettings = new IntervalSettings()) {
 		this.intervalSettings = intervalSettings;
 	}
 }
@@ -26,11 +24,6 @@ export class SessionSettingsBuilder {
 			longBreak,
 			intervals,
 		);
-		return this;
-	}
-
-	volume(volume: number): SessionSettingsBuilder {
-		this.sessionSettings.volume = volume;
 		return this;
 	}
 

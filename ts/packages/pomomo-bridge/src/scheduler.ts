@@ -3,9 +3,10 @@ import { CronJob } from 'cron';
 import sessionRepo from './db/session-repo';
 import { plainToInstance } from 'class-transformer';
 import { Session } from 'pomomo-common/src/model/session';
-import { checkIdle, createUpdateTimerCommand, goNextState } from './command';
+import { createUpdateTimerCmd, createGoNextStateCmd } from './command';
 import { CommandMessage } from 'pomomo-common/src/command';
 import bridge from './bridge';
+import { DateTime } from 'luxon';
 
 const BATCH_SIZE = config.get('scheduler.batchSize');
 const LINGER_MS = config.get('scheduler.lingerMs');
@@ -18,10 +19,12 @@ export const job = new CronJob(
 	config.get('scheduler.job.session.cronTime'),
 	async () => {
 		console.log('running cron job');
-		let lastBatch = new Date();
+		let lastBatch = DateTime.now();
 		let commands: CommandMessage[] = [];
 
-		for await (const key of sessionRepo.client.scanIterator()) {
+		for await (const key of sessionRepo.client.scanIterator({
+			MATCH: 'session#*',
+		})) {
 			console.log('cron job ~ processing', key);
 			const json = await sessionRepo.client.json.get(key);
 			const session = plainToInstance(Session, json);
@@ -36,36 +39,41 @@ export const job = new CronJob(
 				return;
 			}
 			if (session.isIdle()) {
-				console.debug('isIdle');
+				console.debug('isIdle', session.id);
 				// return checkIdle();
 			} else if (!session.timer.isRunning) {
-				console.debug('not running');
+				console.debug('not running', session.id);
 			} else {
-				const secondsRemaining =
-					session.timer.calculateCurrentSecondsRemaining();
-				console.log(secondsRemaining);
-				if (secondsRemaining <= 0) {
-					// return goNextState();
-					console.debug('goNextState');
+				if (session.timer.calculateCurrentSecondsRemaining() <= 0) {
+					console.debug('goNextState', session.id);
+					const cmd = createGoNextStateCmd(session.guildId, session.threadId);
+					if (cmd) {
+						commands.push(cmd);
+					}
 				} else {
-					console.debug('updateTimer');
-					commands.push(
-						createUpdateTimerCommand(session.guildId, session.channelId),
-					);
+					console.debug('updateTimer', session.id);
+					const cmd = createUpdateTimerCmd(session.guildId, session.threadId);
+					if (cmd) {
+						commands.push(cmd);
+					}
 				}
 			}
 
+			console.debug(
+				`scheduler batchSize: ${
+					commands.length
+				} - lastBatch.diffNow() ${lastBatch.diffNow()}`,
+			);
 			if (
-				commands.length == BATCH_SIZE ||
-				new Date().getTime() - lastBatch.getTime() >= LINGER_MS
+				commands.length &&
+				(commands.length >= BATCH_SIZE || lastBatch.diffNow() >= LINGER_MS)
 			) {
 				bridge.sendCommands([...commands]).catch(console.error);
 				commands = [];
-				lastBatch = new Date();
+				lastBatch = DateTime.now();
 			}
 		}
 
-		console.debug(commands.length);
 		if (commands.length) {
 			bridge.sendCommands(commands).catch(console.error);
 		}

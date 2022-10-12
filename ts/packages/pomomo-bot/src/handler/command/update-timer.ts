@@ -1,15 +1,14 @@
-import { CommandMessage, UpdateTimerPayload } from 'pomomo-common/src/command';
+import { CommandMessage } from 'pomomo-common/src/command';
 import sessionRepo from '../../db/session-repo';
 import { update } from '../../message/session-message';
 
 async function handle(command: CommandMessage): Promise<void> {
-	const payload = command.payload as UpdateTimerPayload;
-	console.debug('update-timer.handle() ~', payload);
+	console.debug('update-timer.handle() ~', command.payload);
 
 	try {
 		const session = await sessionRepo.get(
 			command.targetGuildId,
-			payload.channelId,
+			command.payload.threadId,
 		);
 		if (
 			session.timer.isRunning &&

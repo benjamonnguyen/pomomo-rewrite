@@ -17,17 +17,24 @@ export const execute = async (interaction: ButtonInteraction) => {
 			interaction.guildId,
 			interaction.channelId,
 		);
-		await editEnd(session);
+		editEnd(session).catch(console.error);
 		sessionRepo.delete(session.id).catch(console.error);
 		setTimeout(async () => {
 			interaction.channel.delete().catch(console.error);
 			const channel = await interaction.guild.channels.fetch(session.voiceId);
 			channel.delete().catch(console.error);
 		}, 2000);
+		interaction
+			.reply({
+				content: 'This channel will be deleted in a few seconds...',
+			})
+			.catch(console.error);
 	} catch (e) {
 		console.error('end.execute() ~', e);
+		interaction
+			.reply({
+				content: 'Error has occured while ending session...',
+			})
+			.catch(console.error);
 	}
-	interaction.reply({
-		content: 'This channel will be deleted in a few seconds...',
-	});
 };

@@ -12,8 +12,15 @@ import Denque from 'denque';
 import { once, EventEmitter } from 'node:events';
 import path from 'node:path';
 import { createReadStream } from 'node:fs';
+import { ESessionState } from 'pomomo-common/src/model/session';
 
 const START_SOUND_PATH = path.join('resources', 'sound', 'start.ogg');
+const SHORT_BREAK_SOUND_PATH = path.join(
+	'resources',
+	'sound',
+	'short-break.ogg',
+);
+const LONG_BREAK_SOUND_PATH = path.join('resources', 'sound', 'long-break.ogg');
 
 const minPoolSize: number = config.get('voice.audioPlayer.pool.minSize');
 const maxPoolSize: number = config.get('voice.audioPlayer.pool.maxSize');
@@ -101,6 +108,9 @@ class AudioPlayerManager extends EventEmitter {
 	}
 
 	public async play(resource: AudioResource, connections: VoiceConnection[]) {
+		if (!connections.length || !resource) {
+			return;
+		}
 		const MAX_WAIT_MS = 5000;
 		const player = await this.getAvailablePlayer();
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,8 +131,27 @@ class AudioPlayerManager extends EventEmitter {
 
 const audioPlayerManager = new AudioPlayerManager();
 
-export const playStartResource = async (connections: VoiceConnection[]) => {
-	console.log('audio-player.playStartResource()');
-	const resource = createAudioResource(createReadStream(START_SOUND_PATH));
-	return audioPlayerManager.play(resource, connections);
-};
+export function playForState(
+	state: ESessionState,
+	connections: VoiceConnection[],
+) {
+	if (!connections.length) {
+		return;
+	}
+	console.debug('audio-player.playForState()', state.toString());
+	let resourcePath;
+	if (state === ESessionState.POMODORO) {
+		resourcePath = START_SOUND_PATH;
+	} else if (state === ESessionState.SHORT_BREAK) {
+		resourcePath = SHORT_BREAK_SOUND_PATH;
+	} else if (state === ESessionState.LONG_BREAK) {
+		resourcePath = LONG_BREAK_SOUND_PATH;
+	}
+
+	if (resourcePath) {
+		return audioPlayerManager.play(
+			createAudioResource(createReadStream(resourcePath)),
+			connections,
+		);
+	}
+}

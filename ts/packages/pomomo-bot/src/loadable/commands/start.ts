@@ -13,7 +13,7 @@ import { SessionConflictError } from 'pomomo-common/src/db/session-repo';
 import sessionRepo from '../../db/session-repo';
 import { send } from '../../message/session-message';
 import { joinVoiceChannel } from '@discordjs/voice';
-import { playStartResource } from '../../voice/audio-player';
+import { playForState } from '../../voice/audio-player';
 
 const MAX_SESSION_COUNT = config.get('session.maxCount') as number;
 
@@ -167,16 +167,15 @@ export const execute = async (interaction: CommandInteraction) => {
 		voiceChannel = await _createVoiceChannel(interaction, name);
 		session.voiceId = voiceChannel.id;
 		const member = interaction.member as GuildMember;
-		member.voice.member.voice
+		await member.voice.member.voice
 			.setChannel(voiceChannel)
 			.catch((e) => console.error('start.execute() ~', e));
 
 		thread = await initialMsg.startThread({ name: name });
-		thread.members.add(member).catch(console.error);
+		await thread.members.add(member).catch(console.error);
 		session.threadId = thread.id;
 
 		const timerMsg = await send(session, thread);
-		timerMsg.pin().catch(console.error);
 		session.timerMsgId = timerMsg.id;
 		await sessionRepo.insert(session);
 		await interaction.editReply(`Session started in <#${session.voiceId}>`);
@@ -206,5 +205,5 @@ export const execute = async (interaction: CommandInteraction) => {
 		guildId: session.guildId,
 		adapterCreator: interaction.guild.voiceAdapterCreator,
 	});
-	playStartResource([conn]).catch(console.error);
+	playForState(session.state, [conn]).catch(console.error);
 };

@@ -14,8 +14,8 @@ export class SessionRepository {
 		this.client.connect();
 	}
 
-	async get(guildId: string, channelId: string) {
-		const sessionKey = buildSessionKey(guildId, channelId);
+	async get(guildId: string, threadId: string) {
+		const sessionKey = buildSessionKey(guildId, threadId);
 		const sessionInDb = await this.client.json.get(sessionKey);
 		console.debug('sessions-client ~ Got', sessionKey);
 		if (!sessionInDb) {
@@ -27,7 +27,7 @@ export class SessionRepository {
 	async set(session: Session) {
 		return this.client.json
 			.set(session.id, '.', instanceToPlain(session))
-			.then(() => console.info('sessions-client ~ Set', session.id));
+			.then(() => console.info('session-repo ~ Set', session.id));
 	}
 
 	async insert(session: Session) {
@@ -47,6 +47,7 @@ export class SessionRepository {
 			await this.client.json.set(session.id, '.', instanceToPlain(session), {
 				NX: true,
 			});
+			console.info('session-repo ~ Insert', session.id);
 		} catch (_) {
 			const e = new SessionConflictError(session.id);
 			console.error('session-repo.insert()', e);
@@ -80,32 +81,26 @@ export class SessionRepository {
 	}
 
 	async incSessionCount(guildId: string, by: number): Promise<number> {
-		if ((await this.getSessionCount(guildId)) < 1) {
-			await this.client.json.set(
-				buildGuildKey(guildId),
-				'.',
-				{
-					sessionCount: 0,
-				},
-				{ NX: true },
-			);
+		const guildKey = buildGuildKey(guildId);
+		if (!(await this.client.json.get(guildKey))) {
+			this.client.json.set(guildKey, '.', { sessionCount: 1 });
 			return 1;
 		}
-
 		return (await this.client.json.numIncrBy(
-			buildGuildKey(guildId),
+			guildKey,
 			'.sessionCount',
 			by,
 		)) as number;
 	}
 }
 
-export function buildSessionKey(guildId: string, channelId: string): string {
-	return `session:g:${guildId}c:${channelId}`;
+export function buildSessionKey(guildId: string, threadId: string, premium = false): string {
+	const prefix = premium ? 'session:premium' : 'session';
+	return `${prefix}#g${guildId}c${threadId}`;
 }
 
 export function buildGuildKey(guildId: string): string {
-	return `guild:${guildId}`;
+	return `guild#${guildId}`;
 }
 
 export class SessionConflictError extends Error {

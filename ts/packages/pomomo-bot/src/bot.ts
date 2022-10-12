@@ -1,4 +1,8 @@
 import 'reflect-metadata';
+import path from 'node:path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+process.env['NODE_CONFIG_DIR'] = path.join(__dirname, '..', '..', 'config');
 import config from 'config';
 import {
 	Client,

@@ -5,8 +5,8 @@
 	"main": "dist/index.js",
 	"type": "module",
 	"scripts": {
-		"dev": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",
-		"prod": "export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node ."
+		"dev": "export NODE_CONFIG_DIR=../../config && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",
+		"prod": "export NODE_CONFIG_DIR=../../config && export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node ."
 	},
 	"author": "benjinguyen",
 	"license": "ISC",

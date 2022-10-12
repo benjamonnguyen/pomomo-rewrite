@@ -6,11 +6,11 @@
 	"main": "dist/index.js",
 	"type": "module",
 	"scripts": {
-		"dev": "export IS_CLUSTERED=true && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",
-		"dev-no-cluster": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/bot.js",
+		"dev": "export NODE_CONFIG_DIR=../../config && export IS_CLUSTERED=true && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",
+		"dev-no-cluster": "export NODE_CONFIG_DIR=../../config && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/bot.js",
 		"test": "jest",
-		"register-commands-dev": "export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js",
-		"register-commands-prod": "export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js"
+		"register-commands-dev": "export NODE_CONFIG_DIR=../../config && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js",
+		"register-commands-prod": "export NODE_CONFIG_DIR=../../config && export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js"
 	},
 	"author": "benjinguyen",
 	"license": "ISC",

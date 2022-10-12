@@ -1,21 +1,20 @@
 import config from 'config';
-import { Session } from 'pomomo-common/src/model/session';
+import { ESessionState, Session } from 'pomomo-common/src/model/session';
 import {
 	EmbedBuilder,
-	Message,
 	ActionRow,
 	Colors,
 	MessageActionRowComponent,
 	ActionRowBuilder,
 	TextBasedChannel,
+	bold,
 } from 'discord.js';
 import { getFarewell, getGreeting } from './user-message';
 import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
 import { endBtn } from '../loadable/buttons/end';
 import discordClient from '../bot';
-import { Manager } from 'discord-hybrid-sharding';
 
-const RESOLUTION_M = config.get('session.refreshRateM') as number;
+const RESOLUTION_M = config.get('session.resolutionM') as number;
 
 // #region EMBEDS
 const timerStatusEmbed = (s: Session) => {
@@ -30,11 +29,27 @@ const timerStatusEmbed = (s: Session) => {
 
 const sessionSettingsEmbed = (s: Session) => {
 	const intervalSettings = s.settings.intervalSettings;
-	return new EmbedBuilder().setTitle('Session Settings').setColor(Colors.Orange)
-		.setDescription(`Pomodoro: ${intervalSettings.pomodoro} min
-		Short break: ${intervalSettings.shortBreak} min
-    Long break: ${intervalSettings.longBreak} min
-    Intervals: ${intervalSettings.intervals}`);
+	let pomodoro = `Pomodoro: ${intervalSettings.pomodoro} min`;
+	let shortBreak = `Short break: ${intervalSettings.shortBreak} min`;
+	let longBreak = `Long break: ${intervalSettings.longBreak} min`;
+
+	switch (s.state) {
+		case ESessionState.POMODORO:
+			pomodoro = bold(pomodoro);
+			break;
+		case ESessionState.SHORT_BREAK:
+			shortBreak = bold(shortBreak);
+			break;
+		case ESessionState.LONG_BREAK:
+			longBreak = bold(longBreak);
+			break;
+	}
+	return new EmbedBuilder()
+		.setTitle('Session Settings')
+		.setColor(Colors.Orange)
+		.setDescription(
+			`${pomodoro}\n${shortBreak}\n${longBreak}\nIntervals: ${intervalSettings.intervals}`,
+		);
 };
 
 // const sessionStatsEmbed = (s: Session) => {
