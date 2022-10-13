@@ -3,9 +3,9 @@ import {
 	SlashCommandBuilder,
 	CommandInteraction,
 	GuildMember,
-	AnyThreadChannel,
 	ChannelType,
 	VoiceChannel,
+	TextBasedChannel,
 } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
 import { SessionSettingsBuilder } from 'pomomo-common/src/model/settings/session-settings';
@@ -63,11 +63,6 @@ export const command = new SlashCommandBuilder()
 			)
 			.setMinValue(1)
 			.setMaxValue(config.get('command.start.max')),
-	)
-	.addStringOption((opt) =>
-		opt
-			.setName(EOption.NAME)
-			.setDescription('Optional name for the study room'),
 	);
 
 const _validate = async (interaction: CommandInteraction): Promise<string> => {
@@ -111,23 +106,10 @@ const _getErrorMessage = (e: Error): string => {
 		eMsg = e.userMessage;
 	} else {
 		// TODO better error msg
-		eMsg = 'Error occurred while starting session...';
+		eMsg = 'Something went wrong while starting your session...';
 	}
 
 	return eMsg;
-};
-
-const _createVoiceChannel = async (
-	interaction: CommandInteraction,
-	name: string,
-): Promise<VoiceChannel> => {
-	const channel = await interaction.guild.channels.create({
-		name: name,
-		type: ChannelType.GuildVoice,
-	});
-	console.debug('start._createVoiceChannel() ~', channel.id);
-
-	return channel;
 };
 
 export const execute = async (interaction: CommandInteraction) => {
@@ -151,25 +133,15 @@ export const execute = async (interaction: CommandInteraction) => {
 		content: 'Starting session!',
 	});
 
-	const nameOpt = interaction.options.get(EOption.NAME);
-	const name = nameOpt
-		? (nameOpt.value as string)
-		: `study room #${sessionCount}`;
-
 	let session: Session;
-	let voiceChannel: VoiceChannel;
 	try {
 		session = await _createSession(interaction);
-		// session.initialMsgId = initialMsg.id;
 
-		voiceChannel = await _createVoiceChannel(interaction, name);
-		session.channelId = voiceChannel.id;
 		const member = interaction.member as GuildMember;
-		await member.voice.member.voice
-			.setChannel(voiceChannel)
-			.catch((e) => console.error('start.execute() ~', e));
+		session.channelId = member.voice.channelId;
 
-		const timerMsg = await send(session, voiceChannel);
+		const timerMsg = await send(session, member.voice.channel as TextBasedChannel);
+		// timerMsg.pin().catch(console.error);
 		session.timerMsgId = timerMsg.id;
 		await sessionRepo.insert(session);
 		await interaction.editReply(`Session started in <#${session.channelId}>`);
@@ -182,9 +154,6 @@ export const execute = async (interaction: CommandInteraction) => {
 				content: _getErrorMessage(e as Error),
 			}),
 		);
-		if (voiceChannel) {
-			promises.push(voiceChannel.delete());
-		}
 		if (session) {
 			promises.push(sessionRepo.delete(session.id));
 		}

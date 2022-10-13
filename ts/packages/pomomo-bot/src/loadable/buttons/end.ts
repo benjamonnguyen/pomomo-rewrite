@@ -17,18 +17,9 @@ export const execute = async (interaction: ButtonInteraction) => {
 			interaction.guildId,
 			interaction.channelId,
 		);
-		editEnd(session).catch(console.error);
-		sessionRepo.delete(session.id).catch(console.error);
-		setTimeout(async () => {
-			interaction.channel.delete().catch(console.error);
-			const channel = await interaction.guild.channels.fetch(session.channelId);
-			channel.delete().catch(console.error);
-		}, 2000);
-		interaction
-			.reply({
-				content: 'This channel will be deleted in a few seconds...',
-			})
-			.catch(console.error);
+		await Promise.all([editEnd(session), sessionRepo.delete(session.id)]).catch(
+			(e) => console.error('end.execute()', e),
+		);
 	} catch (e) {
 		console.error('end.execute() ~', e);
 		interaction
