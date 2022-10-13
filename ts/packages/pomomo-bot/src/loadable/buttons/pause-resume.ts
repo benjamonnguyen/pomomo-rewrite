@@ -2,7 +2,6 @@ import {
 	ButtonBuilder,
 	ButtonStyle,
 	ButtonInteraction,
-	TextChannel,
 } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
 import client from '../../db/session-repo';

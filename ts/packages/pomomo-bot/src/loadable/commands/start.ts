@@ -3,13 +3,15 @@ import {
 	SlashCommandBuilder,
 	CommandInteraction,
 	GuildMember,
-	ChannelType,
-	VoiceChannel,
+	channelMention,
 	TextBasedChannel,
 } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
 import { SessionSettingsBuilder } from 'pomomo-common/src/model/settings/session-settings';
-import { SessionConflictError } from 'pomomo-common/src/db/session-repo';
+import {
+	buildSessionKey,
+	SessionConflictError,
+} from 'pomomo-common/src/db/session-repo';
 import sessionRepo from '../../db/session-repo';
 import { send } from '../../message/session-message';
 import { joinVoiceChannel } from '@discordjs/voice';
@@ -70,12 +72,19 @@ const _validate = async (interaction: CommandInteraction): Promise<string> => {
 		return 'Command must be sent from a server channel';
 	}
 
-	if (interaction.channel.isThread()) {
-		return 'Command cannot be sent from a thread';
+	const voiceChannelId = (interaction.member as GuildMember).voice.channelId;
+	if (!voiceChannelId) {
+		return 'Must be in a voice channel to start a session';
 	}
 
-	if (!(interaction.member as GuildMember).voice.channelId) {
-		return 'Must be in a voice channel to start a session';
+	if (
+		await sessionRepo.client.exists([
+			buildSessionKey(interaction.guildId, voiceChannelId),
+		])
+	) {
+		return `There is already a session running in ${channelMention(
+			voiceChannelId,
+		)}`;
 	}
 
 	return null;
@@ -129,7 +138,7 @@ export const execute = async (interaction: CommandInteraction) => {
 		return;
 	}
 
-	interaction.reply({
+	await interaction.reply({
 		content: 'Starting session!',
 	});
 
@@ -140,11 +149,16 @@ export const execute = async (interaction: CommandInteraction) => {
 		const member = interaction.member as GuildMember;
 		session.channelId = member.voice.channelId;
 
-		const timerMsg = await send(session, member.voice.channel as TextBasedChannel);
+		const timerMsg = await send(
+			session,
+			member.voice.channel as TextBasedChannel,
+		);
 		// timerMsg.pin().catch(console.error);
 		session.timerMsgId = timerMsg.id;
 		await sessionRepo.insert(session);
-		await interaction.editReply(`Session started in <#${session.channelId}>`);
+		interaction
+			.editReply(`Session started in ${channelMention(session.channelId)}`)
+			.catch(console.error);
 	} catch (e) {
 		console.error(e);
 		// rollback

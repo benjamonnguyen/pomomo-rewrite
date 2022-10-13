@@ -14,6 +14,7 @@ import { getFarewell, getGreeting } from './user-message';
 import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
 import { endBtn } from '../loadable/buttons/end';
 import discordClient from '../bot';
+import sessionRepo from '../db/session-repo';
 
 const RESOLUTION_M = config.get('session.resolutionM') as number;
 
@@ -82,37 +83,57 @@ export const send = async (s: Session, channel: TextBasedChannel) => {
 export const update = async (s: Session) => {
 	console.debug('session-message.update() ~', s.id);
 
-	return discordClient
-		.fetchTimerMsg(s)
-		.then((msg) =>
-			(msg as Message<true>)
-				.edit({
-					embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-					components: [buttonsActionRow(s)],
-				})
-				.catch(console.error),
-		)
-		.catch(console.error);
+	let msg;
+	try {
+		msg = await discordClient.fetchMessage(
+			s.guildId,
+			s.channelId,
+			s.timerMsgId,
+		);
+	} catch (e) {
+		console.error(e);
+		sessionRepo.delete(s.id).catch(console.error);
+	}
+
+	if (msg) {
+		msg
+			.edit({
+				embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
+				components: [buttonsActionRow(s)],
+			})
+			.catch(console.error);
+	}
 };
 
 export const editEnd = async (s: Session) => {
-	return discordClient
-		.fetchTimerMsg(s)
-		.then((msg) => {
-			const embed = timerStatusEmbed(s);
-			embed.setColor(Colors.Red).setDescription('Session ended!');
-			// TODO stat msg in intialMsg
-			return (msg as Message<true>)
-				.edit({
-					// TODO user-message.endMessage
-					content: getFarewell(),
-					// TODO sessionStatsEmbed
-					embeds: [embed],
-					components: [],
-				})
-				.catch(console.error);
-		})
-		.catch(console.error);
+	let msg;
+	try {
+		msg = await discordClient.fetchMessage(
+			s.guildId,
+			s.channelId,
+			s.timerMsgId,
+		);
+	} catch (e) {
+		console.error(e);
+		sessionRepo.delete(s.id).catch(console.error);
+	}
+
+	if (msg) {
+		const embed = new EmbedBuilder()
+			.setTitle('Timer')
+			.setColor(Colors.Red)
+			.setDescription('Session ended!');
+		// TODO stat msg in intialMsg
+		msg
+			.edit({
+				// TODO user-message.endMessage
+				content: getFarewell(),
+				// TODO sessionStatsEmbed
+				embeds: [embed],
+				components: [],
+			})
+			.catch(console.error);
+	}
 };
 
 // TODO build(): MessageOptions

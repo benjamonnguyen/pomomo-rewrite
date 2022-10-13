@@ -36,16 +36,19 @@ export class MyDiscordClient extends Client {
 		}
 	}
 
-	public async fetchTimerMsg(session: Session) {
+	public async fetchMessage(
+		guildId: string,
+		channelId: string,
+		messageId: string,
+	) {
 		try {
-			const guild = await this.guilds.fetch(session.guildId);
+			const guild = await this.guilds.fetch(guildId);
 			const channel = (await guild.channels.fetch(
-				session.channelId,
+				channelId,
 			)) as TextBasedChannel;
-			return channel.messages.fetch(session.timerMsgId);
+			return channel.messages.fetch(messageId);
 		} catch (e) {
 			console.error('MyDiscordClient.fetchTimerMsg()', e);
-			sessionRepo.delete(session.id).catch(console.error);
 			Promise.reject(e);
 		}
 	}
@@ -65,7 +68,11 @@ export class MyDiscordClient extends Client {
 
 // #region SETUP
 let discordClient: MyDiscordClient;
-const INTENTS = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates];
+const INTENTS = [
+	GatewayIntentBits.Guilds,
+	GatewayIntentBits.GuildVoiceStates,
+	GatewayIntentBits.GuildMessageReactions,
+];
 if (process.env.IS_CLUSTERED) {
 	discordClient = new MyDiscordClient({
 		intents: INTENTS,

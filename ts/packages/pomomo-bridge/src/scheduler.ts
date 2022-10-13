@@ -3,7 +3,11 @@ import { CronJob } from 'cron';
 import sessionRepo from './db/session-repo';
 import { plainToInstance } from 'class-transformer';
 import { Session } from 'pomomo-common/src/model/session';
-import { createUpdateTimerCmd, createGoNextStateCmd } from './command';
+import {
+	createUpdateTimerCmd,
+	createGoNextStateCmd,
+	createCheckIdleCmd,
+} from './create-command';
 import { CommandMessage } from 'pomomo-common/src/command';
 import bridge from './bridge';
 import { DateTime } from 'luxon';
@@ -26,22 +30,27 @@ export const job = new CronJob(
 			MATCH: 'session#*',
 		})) {
 			console.log('cron job ~ processing', key);
-			const json = await sessionRepo.client.json.get(key);
-			const session = plainToInstance(Session, json);
-			// if (session.idleCheck) {
-			// 	console.debug('idleCheck');
-			// 	if ((new Date().getTime() - session.idleCheck.getTime()) / 60000) {
-			// 		sessionRepo
-			// 			.delete(session.id)
-			// 			.then(() => console.warn('idleCheck timed out -', session.id))
-			// 			.catch(console.error);
-			// 	}
-			// 	return;
-			// }
-			// if (session.isIdle()) {
-			// 	console.debug('isIdle', session.id);
-			// 	return checkIdle();
-			// } else 
+			const session = plainToInstance(
+				Session,
+				await sessionRepo.client.json.get(key),
+			);
+
+			if (session.idleCheck) {
+				console.debug('idleCheck');
+				if (
+					(new Date().getTime() - session.idleCheck.getTime()) / 3600000 >=
+					24
+				) {
+					sessionRepo
+						.delete(session.id)
+						.then(() => console.warn('idleCheck timed out -', session.id))
+						.catch(console.error);
+				}
+			} else if (true) {
+				console.debug('isIdle', session.id);
+				commands.push(createCheckIdleCmd(session.guildId, session.channelId));
+			}
+
 			if (!session.timer.isRunning) {
 				console.debug('not running', session.id);
 			} else {
