@@ -46,7 +46,7 @@ export const job = new CronJob(
 						.then(() => console.warn('idleCheck timed out -', session.id))
 						.catch(console.error);
 				}
-			} else if (true) {
+			} else if (session.isIdle()) {
 				console.debug('isIdle', session.id);
 				commands.push(createCheckIdleCmd(session.guildId, session.channelId));
 			}
