@@ -1,0 +1,27 @@
+{
+	"name": "pomomo-common",
+	"version": "1.0.0",
+	"description": "",
+	"contributors": [],
+	"type": "module",
+	"typings": "./dist/index.d.ts",
+	"main": "./dist/index.js",
+	"exports": {
+		"./src/command": "./dist/command/index.js",
+		"./src/db/session-repo": "./dist/db/session-repo.js",
+		"./src/model/session": "./dist/model/session/index.js",
+		"./src/model/settings/session-settings": "./dist/model/settings/session-settings.js"
+	},
+	"scripts": {},
+	"author": "benjinguyen",
+	"license": "ISC",
+	"dependencies": {
+		"class-transformer": "^0.5.1",
+		"config": "^3.3.8",
+		"redis": "^4.3.1",
+		"redis-node": "^0.4.0"
+	},
+	"devDependencies": {
+		"@types/config": "^3.3.0"
+	}
+}
