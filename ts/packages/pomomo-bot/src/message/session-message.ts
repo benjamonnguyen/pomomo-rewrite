@@ -8,11 +8,11 @@ import {
 	ActionRowBuilder,
 	TextBasedChannel,
 	bold,
-	Message,
 } from 'discord.js';
 import { getFarewell, getGreeting } from './user-message';
 import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
 import { endBtn } from '../loadable/buttons/end';
+import { skip, skipBtn } from '../loadable/buttons/skip';
 import discordClient from '../bot';
 import sessionRepo from '../db/session-repo';
 
@@ -67,6 +67,7 @@ const sessionSettingsEmbed = (s: Session) => {
 const buttonsActionRow = (s: Session) => {
 	return new ActionRowBuilder().setComponents(
 		pauseResumeBtn(s),
+		skipBtn(),
 		endBtn(),
 	) as unknown as ActionRow<MessageActionRowComponent>;
 };
