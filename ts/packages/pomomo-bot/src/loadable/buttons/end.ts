@@ -1,6 +1,9 @@
 import sessionRepo from '../../db/session-repo';
 import { ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
 import { editEnd } from '../../message/session-message';
+import { Session } from 'pomomo-common/src/model/session';
+import discordClient from '../../bot';
+import { getVoiceConnection } from '@discordjs/voice';
 
 export const BUTTON_ID = 'endBtn';
 
@@ -17,9 +20,7 @@ export const execute = async (interaction: ButtonInteraction) => {
 			interaction.guildId,
 			interaction.channelId,
 		);
-		await Promise.all([editEnd(session), sessionRepo.delete(session.id)]).catch(
-			(e) => console.error('end.execute()', e),
-		);
+		await end(session);
 	} catch (e) {
 		console.error('end.execute() ~', e);
 		interaction
@@ -29,3 +30,11 @@ export const execute = async (interaction: ButtonInteraction) => {
 			.catch(console.error);
 	}
 };
+
+export async function end(session: Session): Promise<void> {
+	try {
+		await Promise.all([editEnd(session), sessionRepo.delete(session.id), getVoiceConnection(session.guildId).destroy()]);
+	} catch (e) {
+		return console.error('end.end()', e);
+	}
+}

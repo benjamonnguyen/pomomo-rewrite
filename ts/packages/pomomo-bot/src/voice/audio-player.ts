@@ -21,6 +21,7 @@ const SHORT_BREAK_SOUND_PATH = path.join(
 	'short-break.ogg',
 );
 const LONG_BREAK_SOUND_PATH = path.join('resources', 'sound', 'long-break.ogg');
+const IDLE_SOUND_PATH = path.join('resources', 'sound', 'idle.ogg');
 
 const minPoolSize: number = config.get('voice.audioPlayer.pool.minSize');
 const maxPoolSize: number = config.get('voice.audioPlayer.pool.maxSize');
@@ -154,4 +155,15 @@ export function playForState(
 			connections,
 		);
 	}
+}
+
+export function playIdleResource(connections: VoiceConnection[]) {
+	if (!connections.length) {
+		return;
+	}
+	console.debug('audio-player.playIdleResource()');
+	return audioPlayerManager.play(
+		createAudioResource(createReadStream(IDLE_SOUND_PATH)),
+		connections,
+	);
 }

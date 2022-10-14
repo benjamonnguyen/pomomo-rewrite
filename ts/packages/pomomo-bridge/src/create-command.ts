@@ -34,4 +34,19 @@ export function createGoNextStateCmd(
 	);
 }
 
-export function checkIdle() {}
+export function createCheckIdleCmd(
+	guildId: string,
+	channelId: string,
+): CommandMessage {
+	for (const arg of arguments) {
+		if (!arg) {
+			console.error('command.createCheckIdleCmd() ~ missing', arg);
+			return;
+		}
+	}
+	return new CommandMessage(
+		ECommand.CHECK_IDLE,
+		{ channelId: channelId } as Payload,
+		guildId,
+	);
+}

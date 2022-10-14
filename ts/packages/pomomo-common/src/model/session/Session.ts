@@ -6,7 +6,9 @@ import { buildSessionKey } from '../../db/session-repo';
 import { Stats } from '../stats';
 
 const IDLE_TIMEOUT_HOUR = config.get('session.idleTimeoutH') as number;
-const PREMIUM_IDLE_TIMEOUT_HOUR = config.get('session.premium.idleTimeoutH') as number;
+const PREMIUM_IDLE_TIMEOUT_HOUR = config.get(
+	'session.premium.idleTimeoutH',
+) as number;
 
 export enum ESessionState {
 	POMODORO,
@@ -38,7 +40,9 @@ export class Session {
 		// this.#userId = userId;
 		session.premium = premium;
 		session.settings = settings;
-		session.timer = Timer.init(settings.intervalSettings.getDurationS(ESessionState.POMODORO));
+		session.timer = Timer.init(
+			settings.intervalSettings.getDurationS(ESessionState.POMODORO),
+		);
 
 		return session;
 	}
@@ -57,20 +61,27 @@ export class Session {
 
 	goNextState(skip = false) {
 		this.state = this.getNextState(this.state);
-		
+
 		if (this.state != ESessionState.POMODORO && !skip) {
 			this.stats.pomodorosCompleted++;
 			this.stats.minutesCompleted += this.settings.intervalSettings.pomodoro;
 			// TODO persist stats for premium
 		}
 
-		this.timer.remainingSeconds = this.settings.intervalSettings.getDurationS(this.state);
+		this.timer.remainingSeconds = this.settings.intervalSettings.getDurationS(
+			this.state,
+		);
 		this.timer.lastUpdated = new Date();
 	}
 
 	private getNextState(state: ESessionState): ESessionState {
 		if (state === ESessionState.POMODORO) {
-			if (this.stats.pomodorosCompleted % this.settings.intervalSettings.intervals === 0 && this.stats.pomodorosCompleted > 0) {
+			if (
+				this.stats.pomodorosCompleted %
+					this.settings.intervalSettings.intervals ===
+					0 &&
+				this.stats.pomodorosCompleted > 0
+			) {
 				return ESessionState.LONG_BREAK;
 			}
 			return ESessionState.SHORT_BREAK;

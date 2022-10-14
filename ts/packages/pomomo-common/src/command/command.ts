@@ -1,6 +1,7 @@
 export enum ECommand {
 	UPDATE_TIMER,
 	GO_NEXT_STATE,
+	CHECK_IDLE,
 }
 
 export class CommandMessage {
