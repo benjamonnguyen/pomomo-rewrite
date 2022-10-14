@@ -1,10 +1,6 @@
-import {
-	ButtonBuilder,
-	ButtonStyle,
-	ButtonInteraction,
-} from 'discord.js';
+import { ButtonBuilder, ButtonStyle, ButtonInteraction } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
-import client from '../../db/session-repo';
+import sessionRepo from '../../db/session-repo';
 import { update } from '../../message/session-message';
 
 export const BUTTON_ID = 'playPauseBtn';
@@ -17,14 +13,21 @@ export const pauseResumeBtn = (s: Session) => {
 };
 
 export const execute = async (interaction: ButtonInteraction) => {
-	interaction.deferUpdate();
-	const session = await client.get(interaction.guildId, interaction.channelId);
-	session.timer.toggle();
-	session.lastUpdated = new Date();
+	try {
+		await interaction.deferUpdate();
+		const session = await sessionRepo.get(
+			interaction.guildId,
+			interaction.channelId,
+		);
+		session.timer.toggle();
+		session.lastUpdated = new Date();
 
-	if (interaction.channel.isTextBased()) {
-		update(session);
+		if (interaction.channel.isTextBased()) {
+			update(session);
+		}
+
+		await sessionRepo.set(session);
+	} catch (e) {
+		console.error('pause-resume.execute() error', e);
 	}
-
-	await client.set(session);
 };
