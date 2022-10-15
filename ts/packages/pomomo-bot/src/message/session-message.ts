@@ -12,7 +12,7 @@ import {
 import { getFarewell, getGreeting } from './user-message';
 import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
 import { endBtn } from '../loadable/buttons/end';
-import { skip, skipBtn } from '../loadable/buttons/skip';
+import { skipBtn } from '../loadable/buttons/skip';
 import discordClient from '../bot';
 import sessionRepo from '../db/session-repo';
 
@@ -92,9 +92,13 @@ export const update = async (s: Session) => {
 			s.timerMsgId,
 		);
 	} catch (e) {
-		console.error(e);
+		console.error("session-message.update() can't find timerMsg", e);
 		sessionRepo.delete(s.id).catch(console.error);
 	}
+
+	sessionRepo.client.json
+		.set(s.id, '.lastUpdated', new Date())
+		.catch((e) => console.error('session-message.update() error', e));
 
 	if (msg) {
 		msg

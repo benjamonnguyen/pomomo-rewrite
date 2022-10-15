@@ -1,3 +1,4 @@
+import { instanceToPlain } from 'class-transformer';
 import { ButtonBuilder, ButtonStyle, ButtonInteraction } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
 import sessionRepo from '../../db/session-repo';
@@ -20,13 +21,20 @@ export const execute = async (interaction: ButtonInteraction) => {
 			interaction.channelId,
 		);
 		session.timer.toggle();
-		session.lastUpdated = new Date();
+		session.lastInteracted = new Date();
 
 		if (interaction.channel.isTextBased()) {
 			update(session);
 		}
 
-		await sessionRepo.set(session);
+		await Promise.all([
+			sessionRepo.client.json.set(session.id, '.lastInteracted', new Date()),
+			sessionRepo.client.json.set(
+				session.id,
+				'.timer',
+				instanceToPlain(session.timer),
+			),
+		]);
 	} catch (e) {
 		console.error('pause-resume.execute() error', e);
 	}

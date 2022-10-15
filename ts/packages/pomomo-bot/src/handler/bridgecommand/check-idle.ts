@@ -39,7 +39,10 @@ async function handle(command: CommandMessage): Promise<void> {
 			})
 			.then(() => {
 				msg.delete().catch(console.error);
-				return sessionRepo.client.json.del(sessionKey, '.idleCheck');
+				return Promise.all([
+					sessionRepo.client.json.del(sessionKey, '.idleCheck'),
+					sessionRepo.client.json.set(sessionKey, '.lastInteracted', new Date()),
+				]);
 			})
 			.catch(() => {
 				console.error('check-idle.handle() - killing idle session');

@@ -26,6 +26,7 @@ export class Session {
 	@Type(() => Date) idleCheck?: Date;
 	@Type(() => SessionSettings) settings: SessionSettings;
 	@Type(() => Timer) timer: Timer;
+	@Type(() => Date) lastInteracted = new Date();
 	@Type(() => Date) lastUpdated = new Date();
 	@Type(() => Stats) stats = new Stats();
 
@@ -53,7 +54,7 @@ export class Session {
 
 	isIdle() {
 		const idleTimeH =
-			(new Date().getTime() - this.lastUpdated.getTime()) / 1000 / 3600;
+			(new Date().getTime() - this.lastInteracted.getTime()) / 1000 / 3600;
 		return this.premium
 			? PREMIUM_IDLE_TIMEOUT_HOUR < idleTimeH
 			: IDLE_TIMEOUT_HOUR < idleTimeH;
