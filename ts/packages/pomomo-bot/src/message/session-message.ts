@@ -34,6 +34,7 @@ const sessionSettingsEmbed = (s: Session) => {
 	let pomodoro = `Pomodoro: ${intervalSettings.pomodoro} min`;
 	let shortBreak = `Short break: ${intervalSettings.shortBreak} min`;
 	let longBreak = `Long break: ${intervalSettings.longBreak} min`;
+	const intervals = `Interval: ${s.interval} | ${intervalSettings.intervals}`;
 
 	switch (s.state) {
 		case ESessionState.POMODORO:
@@ -49,9 +50,7 @@ const sessionSettingsEmbed = (s: Session) => {
 	return new EmbedBuilder()
 		.setTitle('Session Settings')
 		.setColor(Colors.Orange)
-		.setDescription(
-			`${pomodoro}\n${shortBreak}\n${longBreak}\nIntervals: ${intervalSettings.intervals}`,
-		);
+		.setDescription(`${pomodoro}\n${shortBreak}\n${longBreak}\n${intervals}`);
 };
 
 // const sessionStatsEmbed = (s: Session) => {
