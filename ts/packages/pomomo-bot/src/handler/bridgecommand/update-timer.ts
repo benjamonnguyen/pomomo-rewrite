@@ -10,11 +10,8 @@ async function handle(command: CommandMessage): Promise<void> {
 			command.targetGuildId,
 			command.payload.channelId,
 		);
-		if (
-			session.timer.isRunning &&
-			session.timer.calculateCurrentSecondsRemaining() > 0
-		) {
-			update(session);
+		if (session.timer.isRunning) {
+			await update(session);
 		}
 	} catch (e) {
 		return Promise.reject(e);

@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { calcTimeRemaining } from '../../util/timer-util';
 
 class Timer {
 	remainingSeconds: number;
@@ -26,41 +27,35 @@ class Timer {
 	}
 
 	getTimeRemainingAsString = (resolutionM?: number): string => {
-		const secondsRemaining = this.calculateCurrentSecondsRemaining();
-		const h = Math.floor(secondsRemaining / 3600);
-		let m = Math.floor((secondsRemaining % 3600) / 60);
-		console.debug(
-			'Timer.getTimeRemainingAsString() ~',
-			`t: ${secondsRemaining} h: ${h} m: ${m}`,
-		);
+		const secondsRemaining = this.calcSecondsSince(new Date());
+		const { hours, minutes } = calcTimeRemaining(secondsRemaining, resolutionM);
 
-		if (h < 1 && m < 1) {
+		if (hours < 1 && minutes < 1) {
 			return 'Less than 1 minute remaining!';
 		}
 
 		let res = [];
 		if (resolutionM) {
 			res.push('<');
-			m = Math.floor(resolutionM * Math.ceil(m / resolutionM));
 		}
-		if (h) {
-			res.push(h);
-			res.push(h > 1 ? 'hours' : 'hour');
+		if (hours) {
+			res.push(hours);
+			res.push(hours > 1 ? 'hours' : 'hour');
 		}
-		if (m) {
-			res.push(m);
-			res.push(m > 1 ? 'minutes' : 'minute');
+		if (minutes) {
+			res.push(minutes);
+			res.push(minutes > 1 ? 'minutes' : 'minute');
 		}
 		res.push('remaining!');
 
 		return res.join(' ');
 	};
 
-	calculateCurrentSecondsRemaining(): number {
+	calcSecondsSince(since: Date): number {
 		return (
 			(this.lastUpdated.getTime() +
 				this.remainingSeconds * 1000 -
-				new Date().getTime()) /
+				since.getTime()) /
 			1000
 		);
 	}

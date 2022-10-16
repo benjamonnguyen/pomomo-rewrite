@@ -10,7 +10,8 @@
 		"./src/command": "./dist/command/index.js",
 		"./src/db/session-repo": "./dist/db/session-repo.js",
 		"./src/model/session": "./dist/model/session/index.js",
-		"./src/model/settings/session-settings": "./dist/model/settings/session-settings.js"
+		"./src/model/settings/session-settings": "./dist/model/settings/session-settings.js",
+		"./src/util/timer-util": "./dist/util/timer-util.js"
 	},
 	"scripts": {},
 	"author": "benjinguyen",
