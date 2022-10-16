@@ -22,10 +22,12 @@ export class Session {
 	// #userId?: number; TODO allow DM sessions
 	timerMsgId: string;
 	state = ESessionState.POMODORO;
+	interval = 1;
 	premium: boolean;
 	@Type(() => Date) idleCheck?: Date;
 	@Type(() => SessionSettings) settings: SessionSettings;
 	@Type(() => Timer) timer: Timer;
+	@Type(() => Date) lastInteracted = new Date();
 	@Type(() => Date) lastUpdated = new Date();
 	@Type(() => Stats) stats = new Stats();
 
@@ -34,7 +36,6 @@ export class Session {
 		// if (!userId && (!guildId || !channelId)) {
 		// 	throw 'Either userId or guildId and channelId must be provided';
 		// }
-		// TODO check that msg and channels still exist else end
 
 		session.guildId = guildId;
 		// this.#userId = userId;
@@ -53,7 +54,7 @@ export class Session {
 
 	isIdle() {
 		const idleTimeH =
-			(new Date().getTime() - this.lastUpdated.getTime()) / 1000 / 3600;
+			(new Date().getTime() - this.lastInteracted.getTime()) / 1000 / 3600;
 		return this.premium
 			? PREMIUM_IDLE_TIMEOUT_HOUR < idleTimeH
 			: IDLE_TIMEOUT_HOUR < idleTimeH;
@@ -63,9 +64,13 @@ export class Session {
 		this.state = this.getNextState(this.state);
 
 		if (this.state != ESessionState.POMODORO && !skip) {
-			this.stats.pomodorosCompleted++;
+			if (this.interval >= this.settings.intervalSettings.intervals) {
+				this.interval = 1;
+			} else {
+				this.interval++;
+			}
+			this.stats.intervalsCompleted++;
 			this.stats.minutesCompleted += this.settings.intervalSettings.pomodoro;
-			// TODO persist stats for premium
 		}
 
 		this.timer.remainingSeconds = this.settings.intervalSettings.getDurationS(
@@ -76,12 +81,7 @@ export class Session {
 
 	private getNextState(state: ESessionState): ESessionState {
 		if (state === ESessionState.POMODORO) {
-			if (
-				this.stats.pomodorosCompleted %
-					this.settings.intervalSettings.intervals ===
-					0 &&
-				this.stats.pomodorosCompleted > 0
-			) {
+			if (this.interval === this.settings.intervalSettings.intervals) {
 				return ESessionState.LONG_BREAK;
 			}
 			return ESessionState.SHORT_BREAK;

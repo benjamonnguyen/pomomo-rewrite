@@ -17,7 +17,6 @@ export class SessionRepository {
 	async get(guildId: string, channelId: string) {
 		const sessionKey = buildSessionKey(guildId, channelId);
 		const sessionInDb = await this.client.json.get(sessionKey);
-		console.debug('sessions-client ~ Got', sessionKey);
 		if (!sessionInDb) {
 			throw new SessionNotFoundError(sessionKey);
 		}
@@ -27,7 +26,6 @@ export class SessionRepository {
 	async set(session: Session) {
 		return this.client.json
 			.set(session.id, '.', instanceToPlain(session))
-			.then(() => console.info('session-repo ~ Set', session.id));
 	}
 
 	async insert(session: Session) {

@@ -12,7 +12,7 @@ import {
 import { getFarewell, getGreeting } from './user-message';
 import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
 import { endBtn } from '../loadable/buttons/end';
-import { skip, skipBtn } from '../loadable/buttons/skip';
+import { skipBtn } from '../loadable/buttons/skip';
 import discordClient from '../bot';
 import sessionRepo from '../db/session-repo';
 
@@ -34,6 +34,7 @@ const sessionSettingsEmbed = (s: Session) => {
 	let pomodoro = `Pomodoro: ${intervalSettings.pomodoro} min`;
 	let shortBreak = `Short break: ${intervalSettings.shortBreak} min`;
 	let longBreak = `Long break: ${intervalSettings.longBreak} min`;
+	const intervals = `Interval: ${s.interval} | ${intervalSettings.intervals}`;
 
 	switch (s.state) {
 		case ESessionState.POMODORO:
@@ -49,9 +50,7 @@ const sessionSettingsEmbed = (s: Session) => {
 	return new EmbedBuilder()
 		.setTitle('Session Settings')
 		.setColor(Colors.Orange)
-		.setDescription(
-			`${pomodoro}\n${shortBreak}\n${longBreak}\nIntervals: ${intervalSettings.intervals}`,
-		);
+		.setDescription(`${pomodoro}\n${shortBreak}\n${longBreak}\n${intervals}`);
 };
 
 // const sessionStatsEmbed = (s: Session) => {
@@ -92,9 +91,13 @@ export const update = async (s: Session) => {
 			s.timerMsgId,
 		);
 	} catch (e) {
-		console.error(e);
+		console.error("session-message.update() can't find timerMsg", e);
 		sessionRepo.delete(s.id).catch(console.error);
 	}
+
+	sessionRepo.client.json
+		.set(s.id, '.lastUpdated', new Date())
+		.catch((e) => console.error('session-message.update() error', e));
 
 	if (msg) {
 		msg

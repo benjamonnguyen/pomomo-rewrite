@@ -89,7 +89,6 @@ class AudioPlayerManager extends EventEmitter {
 				this.emit('available');
 			}
 		});
-		// TODO ensure player won't be GC'ed while popped;
 
 		this.pool.push(player);
 		this.totalSize++;
