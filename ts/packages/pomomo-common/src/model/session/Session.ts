@@ -65,7 +65,7 @@ export class Session {
 
 		if (this.state != ESessionState.POMODORO && !skip) {
 			if (this.interval >= this.settings.intervalSettings.intervals) {
-				this.interval = 0;
+				this.interval = 1;
 			} else {
 				this.interval++;
 			}
