@@ -72,7 +72,6 @@ const buttonsActionRow = (s: Session) => {
 };
 
 export const send = async (s: Session, channel: TextBasedChannel) => {
-	console.debug('session-message.send() ~ channelId', channel.id);
 	return channel.send({
 		content: getGreeting(),
 		embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],

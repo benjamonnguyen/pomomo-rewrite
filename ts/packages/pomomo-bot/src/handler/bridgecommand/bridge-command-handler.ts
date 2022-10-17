@@ -1,7 +1,7 @@
 import { CommandMessage, ECommand } from 'pomomo-common/src/command';
-import handleUpdateTimer from './update-timer';
-import handleGoNextState from './go-next-state';
-import handleCheckIdle from './check-idle';
+import handleUpdateTimer from './update-timer-handler';
+import handleGoNextState from './go-next-state-handler';
+import handleCheckIdle from './check-idle-handler';
 
 const handle = async (commands: CommandMessage[]) => {
 	const promises: Promise<void>[] = [];

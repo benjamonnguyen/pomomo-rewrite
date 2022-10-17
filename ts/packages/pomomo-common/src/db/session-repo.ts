@@ -24,8 +24,7 @@ export class SessionRepository {
 	}
 
 	async set(session: Session) {
-		return this.client.json
-			.set(session.id, '.', instanceToPlain(session))
+		return this.client.json.set(session.id, '.', instanceToPlain(session));
 	}
 
 	async insert(session: Session) {
@@ -60,11 +59,13 @@ export class SessionRepository {
 		const guildId = (await this.client.json.get(sessionId, {
 			path: '.guildId',
 		})) as string;
-		this.client.del(sessionId).then(() => {
-			this.incSessionCount(guildId, -1).catch((e) =>
-				console.error('sessions-client.delete()', e),
-			);
-			console.info('sessions-client ~ Deleted', sessionId);
+		this.client.del(sessionId).then((n: number) => {
+			if (n) {
+				this.incSessionCount(guildId, -n).catch((e) =>
+					console.error('sessions-client.delete()', e),
+				);
+				console.info('sessions-client ~ Deleted', sessionId);
+			}
 		});
 	}
 
@@ -83,7 +84,7 @@ export class SessionRepository {
 	async incSessionCount(guildId: string, by: number): Promise<number> {
 		const guildKey = buildGuildKey(guildId);
 		if ((await this.client.json.get(guildKey)) < 1) {
-			this.client.json.set(guildKey, '.sessionCount', 1);
+			await this.client.json.set(guildKey, '.sessionCount', 1);
 			return 1;
 		}
 		return (await this.client.json.numIncrBy(

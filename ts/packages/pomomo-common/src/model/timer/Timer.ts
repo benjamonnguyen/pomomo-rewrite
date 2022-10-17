@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import { calcTimeRemaining } from '../../util/timer-util';
 
 class Timer {
@@ -26,6 +26,7 @@ class Timer {
 		this.isRunning = !this.isRunning;
 	}
 
+	@Exclude()
 	getTimeRemainingAsString = (resolutionM?: number): string => {
 		const secondsRemaining = this.calcSecondsSince(new Date());
 		const { hours, minutes } = calcTimeRemaining(secondsRemaining, resolutionM);
