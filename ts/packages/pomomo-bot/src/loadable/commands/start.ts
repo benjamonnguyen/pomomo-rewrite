@@ -157,7 +157,7 @@ export const execute = async (interaction: CommandInteraction) => {
 		session.timerMsgId = timerMsg.id;
 		await sessionRepo.insert(session);
 		interaction
-			.editReply(`Session started in ${channelMention(session.channelId)}`)
+			.editReply(`Session started in ${channelMention(session.channelId)}, further updates will be sent in that channel\'s chat`)
 			.catch(console.error);
 	} catch (e) {
 		console.error(e);
