@@ -16,9 +16,9 @@ import {
 import crossHosting from 'discord-cross-hosting';
 import Cluster from 'discord-hybrid-sharding';
 import { loadCommands, loadButtons } from './loadable/loader';
-import handle from './handler/bridgecommand/bridge-command';
+import handle from './handler/bridgecommand/bridge-command-handler';
 import sessionRepo from './db/session-repo';
-import { Session } from 'pomomo-common/src/model/session';
+import handleInteraction from './handler/interaction/interaction-handler';
 
 export class MyDiscordClient extends Client {
 	commands: Map<string, (interaction: CommandInteraction) => Promise<void>>;
@@ -52,14 +52,6 @@ export class MyDiscordClient extends Client {
 			Promise.reject(e);
 		}
 	}
-
-	// public async fetchInitalMsg(session: Session) {
-	// 	const guild = await this.guilds.fetch(session.guildId);
-	// 	const thread = (await guild.channels.fetch(
-	// 		session.channelId,
-	// 	)) as AnyThreadChannel;
-	// 	return thread.parent.messages.fetch(session.initialMsgId);
-	// }
 
 	public toJSON(): unknown {
 		return { application: this.application, options: this.options };
@@ -130,77 +122,14 @@ process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 // #endregion
 
-// TODO move to handler/
-// #region INTERACTION HANDLERS
-const handleCommandInteraction = async (cmdInteraction: CommandInteraction) => {
-	const allowedGuilds = config.get('allowedGuilds') as string;
-	if (
-		!allowedGuilds.includes('*') &&
-		!allowedGuilds.includes(cmdInteraction.guildId)
-	) {
-		cmdInteraction.reply(
-			'This server does not have permission to use this bot',
-		);
-		return;
-	}
-	const execute = discordClient.commands.get(cmdInteraction.commandName);
-	if (!execute) {
-		console.error(
-			`Error: Command not registered: ${cmdInteraction.commandName}`,
-		);
-		return;
-	}
-
-	try {
-		await execute(cmdInteraction);
-	} catch (e) {
-		console.error(e);
-		await cmdInteraction.reply({
-			// TODO better error message
-			content: 'There was an error while executing this command!',
-			ephemeral: true,
-		});
-	}
-};
-
-const handleButtonInteraction = async (btnInteraction: ButtonInteraction) => {
-	const execute = discordClient.buttons.get(btnInteraction.customId);
-	if (!execute) {
-		console.error(`Error: Button not registered: ${btnInteraction.customId}`);
-		return;
-	}
-
-	try {
-		await execute(btnInteraction);
-	} catch (e) {
-		console.error(e);
-		btnInteraction
-			.reply({
-				// TODO better error message
-				content: 'There was an error while executing this button interaction!',
-				ephemeral: true,
-			})
-			.catch(console.error);
-	}
-};
-
-discordClient.on('interactionCreate', (interaction: Interaction) => {
-	if (interaction.isButton()) {
-		handleButtonInteraction(interaction as ButtonInteraction).catch(
-			console.error,
-		);
-	} else if (interaction.isCommand()) {
-		handleCommandInteraction(interaction as CommandInteraction).catch(
-			console.error,
-		);
-	}
+discordClient.on('interactionCreate', async (interaction: Interaction) => {
+	await handleInteraction(interaction).catch(console.error);
 });
 
 // discordClient.on('voiceStateUpdate', (oldVS, newVS) => {
 // TODO autoshush
 // 	newVS.guild.voiceStates.cache.set(newVS.member.id, newVS);
 // });
-// #endregion
 
 if (discordClient.cluster) {
 	discordClient.cluster.on('message', (msg) => {

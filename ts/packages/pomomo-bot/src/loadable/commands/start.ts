@@ -5,12 +5,12 @@ import {
 	GuildMember,
 	channelMention,
 	TextBasedChannel,
+	Message,
 } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
 import { SessionSettingsBuilder } from 'pomomo-common/src/model/settings/session-settings';
 import {
 	buildSessionKey,
-	SessionConflictError,
 } from 'pomomo-common/src/db/session-repo';
 import sessionRepo from '../../db/session-repo';
 import { send } from '../../message/session-message';
@@ -87,7 +87,12 @@ const _validate = async (interaction: CommandInteraction): Promise<string> => {
 		)}`;
 	}
 
-	return null;
+	// TODO premium check? guild#123123:{ premium: bool } with ttl
+
+	const sessionCount = await sessionRepo.getSessionCount(interaction.guildId);
+	if (sessionCount >= MAX_SESSION_COUNT) {
+		return `This server can have a max of ${MAX_SESSION_COUNT} sessions`;
+	}
 };
 
 const _createSession = async (
@@ -109,32 +114,21 @@ const _createSession = async (
 	return Session.init(settings, interaction.guildId);
 };
 
-const _getErrorMessage = (e: Error): string => {
-	let eMsg: string;
-	if (e instanceof SessionConflictError) {
-		eMsg = e.userMessage;
-	} else {
-		// TODO better error msg
-		eMsg = 'Something went wrong while starting your session...';
+const _rollback = (session: Session, timerMsg: Message): void => {
+	const promises = [];
+	if (session) {
+		promises.push(sessionRepo.delete(session.id));
 	}
-
-	return eMsg;
+	if (timerMsg) {
+		promises.push(timerMsg.delete());
+	}
+	Promise.all(promises).catch(console.error);
 };
 
 export const execute = async (interaction: CommandInteraction) => {
 	const errorMsg = await _validate(interaction);
 	if (errorMsg) {
-		interaction.reply(errorMsg);
-		return;
-	}
-
-	// TODO premium check?
-
-	const sessionCount = await sessionRepo.getSessionCount(interaction.guildId);
-	if (sessionCount >= MAX_SESSION_COUNT) {
-		interaction.reply(
-			`This server can have a max of ${MAX_SESSION_COUNT} sessions`,
-		);
+		await interaction.reply(errorMsg);
 		return;
 	}
 
@@ -143,6 +137,7 @@ export const execute = async (interaction: CommandInteraction) => {
 	});
 
 	let session: Session;
+	let timerMsg: Message;
 	try {
 		session = await _createSession(interaction);
 
@@ -153,25 +148,18 @@ export const execute = async (interaction: CommandInteraction) => {
 			session,
 			member.voice.channel as TextBasedChannel,
 		);
-		// timerMsg.pin().catch(console.error);
 		session.timerMsgId = timerMsg.id;
 		await sessionRepo.insert(session);
 		interaction
-			.editReply(`Session started in ${channelMention(session.channelId)}`)
+			.editReply(
+				`Session started in ${channelMention(
+					session.channelId,
+				)}.\nFurther messages will be sent in that channel\'s chat.`,
+			)
 			.catch(console.error);
 	} catch (e) {
-		console.error(e);
-		// rollback
-		const promises = [];
-		promises.push(
-			interaction.editReply({
-				content: _getErrorMessage(e as Error),
-			}),
-		);
-		if (session) {
-			promises.push(sessionRepo.delete(session.id));
-		}
-		Promise.allSettled(promises);
+		_rollback(session, timerMsg);
+		throw e;
 	}
 
 	const conn = joinVoiceChannel({
