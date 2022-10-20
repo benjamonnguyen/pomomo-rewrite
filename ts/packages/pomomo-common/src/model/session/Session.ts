@@ -4,6 +4,7 @@ import Timer from '../timer/Timer';
 import { Type } from 'class-transformer';
 import { buildSessionKey } from '../../db/session-repo';
 import { Stats } from '../stats';
+import { FocusMember } from '../../model/focus-member';
 
 const IDLE_TIMEOUT_HOUR = config.get('session.idleTimeoutH') as number;
 const PREMIUM_IDLE_TIMEOUT_HOUR = config.get(
@@ -30,6 +31,7 @@ export class Session {
 	@Type(() => Date) lastInteracted = new Date();
 	@Type(() => Date) lastUpdated = new Date();
 	@Type(() => Stats) stats = new Stats();
+	focusMembers: FocusMember[] = [];
 
 	static init(settings: SessionSettings, guildId: string, premium = false) {
 		const session = new Session();
@@ -38,7 +40,6 @@ export class Session {
 		// }
 
 		session.guildId = guildId;
-		// this.#userId = userId;
 		session.premium = premium;
 		session.settings = settings;
 		session.timer = Timer.init(
