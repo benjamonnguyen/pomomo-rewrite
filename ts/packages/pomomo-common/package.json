@@ -12,7 +12,8 @@
 		"./src/model/session": "./dist/model/session/index.js",
 		"./src/model/settings/session-settings": "./dist/model/settings/session-settings.js",
 		"./src/util/timer-util": "./dist/util/timer-util.js",
-		"./src/discord/error": "./dist/discord/error.js"
+		"./src/discord/error": "./dist/discord/error.js",
+		"./src/model/focus-member": "./dist/model/focus-member.js"
 	},
 	"scripts": {},
 	"author": "benjinguyen",

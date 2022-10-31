@@ -11,7 +11,7 @@ const handle = async (interaction: Interaction) => {
 			await handleCommandInteraction(interaction as CommandInteraction);
 		}
 	} catch (e) {
-		await handleInteractionError(interaction, e);
+		await handleInteractionError(interaction, e as Error);
 	}
 }
 

@@ -10,11 +10,12 @@ import {
 	bold,
 } from 'discord.js';
 import { getFarewell, getGreeting } from './user-message';
-import { pauseResumeBtn } from '../loadable/buttons/pause-resume';
-import { endBtn } from '../loadable/buttons/end';
-import { skipBtn } from '../loadable/buttons/skip';
+import { pauseResumeBtn } from '../loadable/buttons/pause-resume-button';
+import { endBtn } from '../loadable/buttons/end-button';
+import { skipBtn } from '../loadable/buttons/skip-button';
 import discordClient from '../bot';
 import sessionRepo from '../db/session-repo';
+import { focusBtn } from '../loadable/buttons/focus-button';
 
 const RESOLUTION_M = config.get('session.resolutionM') as number;
 
@@ -63,7 +64,7 @@ const sessionSettingsEmbed = (s: Session) => {
 
 // TODO join/autoshush opt-in buttons + db integration
 
-const buttonsActionRow = (s: Session) => {
+const primaryActionRow = (s: Session) => {
 	return new ActionRowBuilder().setComponents(
 		pauseResumeBtn(s),
 		skipBtn(),
@@ -71,11 +72,17 @@ const buttonsActionRow = (s: Session) => {
 	) as unknown as ActionRow<MessageActionRowComponent>;
 };
 
+const secondaryActionRow = (deafen: boolean) => {
+	return new ActionRowBuilder().setComponents(
+		focusBtn(deafen),
+	) as unknown as ActionRow<MessageActionRowComponent>;
+};
+
 export const send = async (s: Session, channel: TextBasedChannel) => {
 	return channel.send({
 		content: getGreeting(),
 		embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-		components: [buttonsActionRow(s)],
+		components: [primaryActionRow(s), secondaryActionRow(false)],
 	});
 };
 
@@ -102,7 +109,7 @@ export const update = async (s: Session) => {
 		msg
 			.edit({
 				embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-				components: [buttonsActionRow(s)],
+				components: [primaryActionRow(s)],
 			})
 			.catch(console.error);
 	}

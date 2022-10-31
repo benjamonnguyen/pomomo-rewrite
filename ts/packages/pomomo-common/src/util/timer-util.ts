@@ -9,10 +9,10 @@ export function calcTimeRemaining(
 		m = Math.floor(resolutionM * Math.ceil(m / resolutionM));
 	}
 
-	console.debug(
-		'timer-util.getTimeRemaining() ~',
-		`t: ${secondsRemaining} h: ${h} m: ${m}`,
-	);
+	// console.debug(
+	// 	'timer-util.getTimeRemaining() ~',
+	// 	`t: ${secondsRemaining} h: ${h} m: ${m}`,
+	// );
 
 	return { hours: h, minutes: m };
 }

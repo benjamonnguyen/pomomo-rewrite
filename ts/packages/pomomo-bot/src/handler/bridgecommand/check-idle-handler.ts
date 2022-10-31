@@ -3,7 +3,7 @@ import { CommandMessage } from 'pomomo-common/src/command';
 import sessionRepo from '../../db/session-repo';
 import { TextBasedChannel } from 'discord.js';
 import { buildSessionKey } from 'pomomo-common/src/db/session-repo';
-import { end } from '../../loadable/buttons/end';
+import { end } from '../../loadable/buttons/end-button';
 import { playIdleResource } from '../../voice/audio-player';
 import { joinVoiceChannel } from '@discordjs/voice';
 
