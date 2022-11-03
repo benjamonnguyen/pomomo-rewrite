@@ -6,6 +6,7 @@ export async function handleInteractionError(
 	interaction: Interaction,
 	e: Error,
 ) {
+	console.warn('error-handler.handleInteractionError()', e);
 	try {
 		if (e instanceof DiscordAPIError) {
 			if (e.status === 403) {
@@ -40,6 +41,7 @@ async function _reply(interaction: Interaction, msgContent: string) {
 		await interaction.reply({
 			content: msgContent,
 			embeds: [buildErrorEmbed()],
+			ephemeral: true,
 		});
 	}
 }

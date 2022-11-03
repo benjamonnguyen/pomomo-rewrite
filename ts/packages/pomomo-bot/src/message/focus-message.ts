@@ -2,9 +2,9 @@ import { ActionRowBuilder, BaseMessageOptions } from 'discord.js';
 import { toggleDeafenBtn } from '../loadable/buttons/toggle-deafen-button';
 import { exitFocusBtn } from '../loadable/buttons/exit-focus-button';
 
-export function buildFocusMessage(deafen: boolean): BaseMessageOptions {
+export function buildFocusMessage(channelName: string, deafen: boolean): BaseMessageOptions {
 	return {
-		content: 'Focus mode activated!',
+		content: `Focus mode activated in ${channelName} channel!`,
 		components: [buildActionRow(deafen)],
 	} as BaseMessageOptions;
 }

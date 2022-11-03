@@ -24,7 +24,6 @@ const RESOLUTION_M = config.get('session.resolutionM') as number;
 export const job = new CronJob(
 	config.get('scheduler.job.session.cronTime'),
 	async () => {
-		console.log('running cron job');
 		let lastBatch = DateTime.now();
 		let commands: CommandMessage[] = [];
 

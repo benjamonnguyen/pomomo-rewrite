@@ -104,13 +104,6 @@ export function buildSessionKey(
 	return `${prefix}#g${guildId}c${channelId}`;
 }
 
-export function buildSessionInfoKey(
-	guildId: string,
-	channelId: string,
-): string {
-	return `session:info#g${guildId}c${channelId}`;
-}
-
 export function buildGuildKey(guildId: string): string {
 	return `guild#${guildId}`;
 }

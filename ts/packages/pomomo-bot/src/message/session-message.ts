@@ -72,9 +72,9 @@ const primaryActionRow = (s: Session) => {
 	) as unknown as ActionRow<MessageActionRowComponent>;
 };
 
-const secondaryActionRow = (deafen: boolean) => {
+const secondaryActionRow = () => {
 	return new ActionRowBuilder().setComponents(
-		focusBtn(deafen),
+		focusBtn(),
 	) as unknown as ActionRow<MessageActionRowComponent>;
 };
 
@@ -82,7 +82,7 @@ export const send = async (s: Session, channel: TextBasedChannel) => {
 	return channel.send({
 		content: getGreeting(),
 		embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-		components: [primaryActionRow(s), secondaryActionRow(false)],
+		components: [primaryActionRow(s), secondaryActionRow()],
 	});
 };
 
@@ -109,7 +109,7 @@ export const update = async (s: Session) => {
 		msg
 			.edit({
 				embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-				components: [primaryActionRow(s)],
+				components: [primaryActionRow(s), secondaryActionRow()],
 			})
 			.catch(console.error);
 	}

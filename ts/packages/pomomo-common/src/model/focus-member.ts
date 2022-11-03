@@ -1,9 +1,11 @@
 export class FocusMember {
-	deafen?: true | null;
-	serverDeaf?: true | null;
-	serverMute?: true | null;
+	deafen: boolean;
+	serverDeaf?: true;
+	serverMute?: true;
+	messageId: string;
+	channelName: string;
 }
 
-export function buildFocusMemberKey(guildId: string, channelId: string, userId: string): string {
-	return `focusMember#g${guildId}c${channelId}u${userId}`;
+export function buildFocusMemberKey(userId: string): string {
+	return `focusMember#u${userId}`;
 }

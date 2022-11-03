@@ -1,4 +1,5 @@
 import { ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
+import * as focusMemberRepo from '../../db/focus-member-repo';
 
 export const BUTTON_ID = 'exitFocusBtn';
 
@@ -10,5 +11,11 @@ export const exitFocusBtn = () => {
 };
 
 export const execute = async (interaction: ButtonInteraction) => {
-	console.log(BUTTON_ID);
+	console.debug(BUTTON_ID);
+  await interaction.deferUpdate();
+	// TODO calculate stats and display in focus session end msg
+	if ((await focusMemberRepo.del(interaction.user.id)) != 1) {
+		console.warn('exit-focus-button.execute() ~ not found');
+	}
+	interaction.message.delete();
 };
