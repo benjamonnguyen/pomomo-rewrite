@@ -8,6 +8,8 @@ import {
 import * as focusMemberRepo from '../../db/focus-member-repo';
 import { FocusMember } from 'pomomo-common/src/model/focus-member';
 import { buildFocusMessage } from '../../message/focus-message';
+import { handleAutoshush } from '../../autoshush';
+import sessionRepo from '../../db/session-repo';
 
 export const BUTTON_ID = 'focusBtn';
 
@@ -33,6 +35,8 @@ export const execute = async (interaction: ButtonInteraction) => {
 		const focusMember: FocusMember = {
 			messageId: msg.id,
 			deafen: false,
+			guildId: interaction.guildId,
+			channelId: interaction.channelId,
 			channelName: interaction.channel.name,
 		};
 		if (member.voice.serverDeaf) {
@@ -41,7 +45,14 @@ export const execute = async (interaction: ButtonInteraction) => {
 		if (member.voice.serverMute) {
 			focusMember.serverMute = true;
 		}
-		await focusMemberRepo.set(interaction.user.id, focusMember);
+		await Promise.all([
+			focusMemberRepo.add(
+				focusMember.guildId,
+				focusMember.channelId,
+				interaction.user.id,
+			),
+			focusMemberRepo.set(interaction.user.id, focusMember),
+		]);
 	} else {
 		try {
 			const oldMsg = interaction.channel.messages.cache.get(
@@ -54,12 +65,37 @@ export const execute = async (interaction: ButtonInteraction) => {
 		} catch (e) {
 			console.warn('focus-button.execute() ~ error while deleting oldMsg', e);
 		}
+		await focusMemberRepo.remove(
+			focusMember.guildId,
+			focusMember.channelId,
+			interaction.user.id,
+		);
+		focusMember.channelId = interaction.channelId;
+		focusMember.guildId = interaction.guildId;
 		focusMember.messageId = msg.id;
 		focusMember.channelName = interaction.channel.name;
-		await focusMemberRepo.set(interaction.user.id, focusMember);
+		await Promise.all([
+			focusMemberRepo.add(
+				focusMember.guildId,
+				focusMember.channelId,
+				interaction.user.id,
+			),
+			focusMemberRepo.set(interaction.user.id, focusMember),
+		]);
 	}
-	interaction.reply({
-		content: 'You can manage your focus settings in my DM!',
-		ephemeral: true,
-	});
+	await Promise.allSettled([
+		interaction.reply({
+			content: 'You can manage your focus settings in my DM!',
+			ephemeral: true,
+		}),
+		sessionRepo
+			.get(interaction.guildId, interaction.channelId)
+			.then((session) =>
+				handleAutoshush(
+					session,
+					interaction.guild.members,
+					new Set([interaction.user.id]),
+				),
+			),
+	]);
 };

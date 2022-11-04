@@ -126,11 +126,6 @@ discordClient.on('interactionCreate', async (interaction: Interaction) => {
 	await handleInteraction(interaction).catch(console.error);
 });
 
-// discordClient.on('voiceStateUpdate', (oldVS, newVS) => {
-// TODO autoshush
-// 	newVS.guild.voiceStates.cache.set(newVS.member.id, newVS);
-// });
-
 if (discordClient.cluster) {
 	discordClient.cluster.on('message', (msg) => {
 		if (!msg._sRequest) return;

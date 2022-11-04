@@ -1,7 +1,13 @@
 import sessionRepo from '../../db/session-repo';
-import { ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
+import {
+	ButtonBuilder,
+	ButtonInteraction,
+	ButtonStyle,
+	GuildMemberManager,
+} from 'discord.js';
 import { update } from '../../message/session-message';
 import { Session } from 'pomomo-common/src/model/session';
+import { handleAutoshush } from '../../autoshush';
 
 export const BUTTON_ID = 'skipBtn';
 
@@ -19,7 +25,7 @@ export const execute = async (interaction: ButtonInteraction) => {
 			interaction.guildId,
 			interaction.channelId,
 		);
-		await skip(session);
+		await skip(session, interaction.guild.members);
 	} catch (e) {
 		console.error('skip.execute() ~', e);
 		interaction
@@ -30,10 +36,17 @@ export const execute = async (interaction: ButtonInteraction) => {
 	}
 };
 
-export async function skip(session: Session): Promise<void> {
+export async function skip(
+	session: Session,
+	memberManager: GuildMemberManager,
+): Promise<void> {
 	session.goNextState(true);
 	try {
-		await Promise.all([sessionRepo.set(session), update(session)]);
+		await Promise.all([
+			sessionRepo.set(session),
+			update(session),
+			handleAutoshush(session, memberManager),
+		]);
 	} catch (e) {
 		Promise.reject(`skip.skip() error ${e}`);
 	}

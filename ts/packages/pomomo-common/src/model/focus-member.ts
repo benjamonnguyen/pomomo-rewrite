@@ -2,6 +2,8 @@ export class FocusMember {
 	deafen: boolean;
 	serverDeaf?: true;
 	serverMute?: true;
+	guildId: string;
+	channelId: string;
 	messageId: string;
 	channelName: string;
 }

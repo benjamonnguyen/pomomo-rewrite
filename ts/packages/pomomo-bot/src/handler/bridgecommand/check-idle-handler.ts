@@ -41,14 +41,18 @@ async function handle(command: CommandMessage): Promise<void> {
 				msg.delete().catch(console.error);
 				return Promise.all([
 					sessionRepo.client.json.del(sessionKey, '.idleCheck'),
-					sessionRepo.client.json.set(sessionKey, '.lastInteracted', new Date()),
+					sessionRepo.client.json.set(
+						sessionKey,
+						'.lastInteracted',
+						new Date(),
+					),
 				]);
 			})
 			.catch(() => {
 				console.error('check-idle.handle() - killing idle session');
 				sessionRepo
 					.get(command.targetGuildId, command.payload.channelId)
-					.then((session) => end(session).catch(console.error))
+					.then((session) => end(session, guild.members).catch(console.error))
 					.catch(console.error);
 				msg.edit({ content: 'Idle session ended' }).catch(console.error);
 			});
