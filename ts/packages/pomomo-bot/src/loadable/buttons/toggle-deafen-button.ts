@@ -27,12 +27,16 @@ export const execute = async (interaction: ButtonInteraction) => {
 	const guild = await discordClient.guilds.fetch(focusMember.guildId);
 	const session = await sessionRepo.get(guild.id, focusMember.channelId);
 	const deafen = await focusMemberRepo.toggleDeafen(interaction.user.id);
-	await handleAutoshush(session, guild.members, new Set([interaction.user.id]));
 	try {
-		await interaction.message.edit(
-			buildFocusMessage(focusMember.channelName, deafen),
-		);
+		await Promise.all([
+			handleAutoshush(session, guild.members, new Set([interaction.user.id])),
+			,
+			interaction.message.edit(
+				buildFocusMessage(focusMember.channelName, deafen),
+			),
+		]);
 	} catch (e) {
+		console.error(BUTTON_ID, e);
 		await interaction.reply({ content: 'Try re-activating focus mode!' });
 		return;
 	}

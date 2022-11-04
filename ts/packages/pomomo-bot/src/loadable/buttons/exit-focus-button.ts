@@ -1,9 +1,5 @@
 import sessionRepo from '../../db/session-repo';
-import {
-	ButtonBuilder,
-	ButtonInteraction,
-	ButtonStyle,
-} from 'discord.js';
+import { ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
 import * as focusMemberRepo from '../../db/focus-member-repo';
 import { endAutoshush } from '../../autoshush';
 import discordClient from '../../bot';
@@ -19,16 +15,22 @@ export const exitFocusBtn = () => {
 
 export const execute = async (interaction: ButtonInteraction) => {
 	console.debug(BUTTON_ID);
-	await interaction.deferUpdate();
 	// TODO calculate stats and display in focus session end msg
 	const focusMember = await focusMemberRepo.get(interaction.user.id);
 	if ((await focusMemberRepo.del(interaction.user.id)) != 1) {
 		console.warn('exit-focus-button.execute() ~ not found');
 	}
-	await Promise.allSettled([
-		endFocus(focusMember.guildId, focusMember.channelId, interaction.user.id),
-		interaction.message.delete(),
-	]);
+	try {
+		await Promise.all([
+			endFocus(focusMember.guildId, focusMember.channelId, interaction.user.id),
+			interaction.message.delete(),
+		]);
+	} catch (e) {
+		console.error(BUTTON_ID, e);
+		await interaction.reply({ content: 'Try re-activating focus mode!' });
+		return;
+	}
+	await interaction.deferUpdate();
 };
 
 export async function endFocus(
