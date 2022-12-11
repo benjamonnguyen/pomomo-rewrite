@@ -3,10 +3,12 @@ import {
 	ButtonBuilder,
 	ButtonInteraction,
 	ButtonStyle,
+	GuildMemberManager,
 } from 'discord.js';
 import { editEnd } from '../../message/session-message';
 import { Session } from 'pomomo-common/src/model/session';
 import { getVoiceConnection } from '@discordjs/voice';
+import { endAutoshush } from '../../autoshush';
 
 export const BUTTON_ID = 'endBtn';
 
@@ -23,7 +25,7 @@ export const execute = async (interaction: ButtonInteraction) => {
 			interaction.guildId,
 			interaction.channelId,
 		);
-		await end(session);
+		await end(session, interaction.guild.members);
 	} catch (e) {
 		console.error('end.execute() ~', e);
 		interaction
@@ -34,10 +36,21 @@ export const execute = async (interaction: ButtonInteraction) => {
 	}
 };
 
-export async function end(session: Session): Promise<void> {
-	Promise.all([editEnd(session), sessionRepo.delete(session.id)]).catch((e) =>
-		console.error('end.end()', e),
-	);
+export async function end(
+	session: Session,
+	memberManager?: GuildMemberManager,
+): Promise<void> {
+	const promises = [];
+	if (memberManager) {
+		promises.push(endAutoshush(session, memberManager));
+	}
+	promises.push([editEnd(session), sessionRepo.delete(session.id)]);
+	const res = await Promise.allSettled(promises);
+	res.forEach((r) => {
+		if (r.status === 'rejected') {
+			console.error('end-button.end() - error', r.reason);
+		}
+	});
 	try {
 		const conn = getVoiceConnection(session.guildId);
 		if (conn) {

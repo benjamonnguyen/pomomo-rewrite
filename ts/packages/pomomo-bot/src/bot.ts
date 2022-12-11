@@ -16,7 +16,7 @@ import {
 import crossHosting from 'discord-cross-hosting';
 import Cluster from 'discord-hybrid-sharding';
 import { loadCommands, loadButtons } from './loadable/loader';
-import handle from './handler/bridgecommand/bridge-command-handler';
+import handleBridgeCommands from './handler/bridgecommand/bridge-command-handler';
 import sessionRepo from './db/session-repo';
 import handleInteraction from './handler/interaction/interaction-handler';
 
@@ -126,17 +126,12 @@ discordClient.on('interactionCreate', async (interaction: Interaction) => {
 	await handleInteraction(interaction).catch(console.error);
 });
 
-// discordClient.on('voiceStateUpdate', (oldVS, newVS) => {
-// TODO autoshush
-// 	newVS.guild.voiceStates.cache.set(newVS.member.id, newVS);
-// });
-
 if (discordClient.cluster) {
 	discordClient.cluster.on('message', (msg) => {
 		if (!msg._sRequest) return;
 		if (msg.commands) {
-			handle(msg.commands)
-				.then((e) => msg.reply({}))
+			handleBridgeCommands(msg.commands)
+				.then(() => msg.reply({}))
 				.catch((e) => msg.reply({ error: e }));
 		}
 	});

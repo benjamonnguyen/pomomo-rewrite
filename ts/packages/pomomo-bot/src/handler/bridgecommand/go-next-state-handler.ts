@@ -4,31 +4,29 @@ import sessionRepo from '../../db/session-repo';
 import { update } from '../../message/session-message';
 import { joinVoiceChannel } from '@discordjs/voice';
 import discordClient from '../../bot';
+// import { handleAutoshush } from '../../autoshush';
 
 async function handle(command: CommandMessage): Promise<void> {
 	console.debug('go-next-state.handle() ~', command.payload);
 
-	const voiceAdapterCreator = (
-		await discordClient.guilds.fetch(command.targetGuildId)
-	).voiceAdapterCreator;
+	const guild = await discordClient.guilds.fetch(command.targetGuildId);
 
-	sessionRepo
-		.get(command.targetGuildId, command.payload.channelId)
-		.then((session) => {
-			session.goNextState();
-			sessionRepo.set(session);
-			update(session).catch((e) =>
-				console.error('go-next-state.handle() ~', command, e),
-			);
+	const session = await sessionRepo.get(
+		command.targetGuildId,
+		command.payload.channelId,
+	);
 
-			const conn = joinVoiceChannel({
-				channelId: session.channelId,
-				guildId: session.guildId,
-				adapterCreator: voiceAdapterCreator,
-			});
-			playForState(session.state, [conn]).catch(console.error);
-		})
-		.catch((e) => console.error('go-next-state.handle() ~', command, e));
+	session.goNextState();
+	await sessionRepo.set(session);
+
+	// TODO await handleAutoshush(session, guild.members);
+
+	const conn = joinVoiceChannel({
+		channelId: session.channelId,
+		guildId: session.guildId,
+		adapterCreator: guild.voiceAdapterCreator,
+	});
+	await Promise.allSettled([update(session), playForState(session.state, [conn])]);
 }
 
 export default handle;

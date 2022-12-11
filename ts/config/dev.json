@@ -1,0 +1,53 @@
+{
+	"app": {
+		"name": "pomomo-bot"
+	},
+	"bot": {
+		"token": "ODI0MzEzODUwMDIyMTk5Mzg2.GPfrTg.Dr7Mir37OzriCDwwqAHzKxMnEfohtlYYZJSf4M",
+		"clientId": "824313850022199386"
+	},
+	"bridge": {
+		"host": "localhost",
+		"port": 4444,
+		"authToken": "EaA2gZnuGtrVzCAJydEL",
+		"totalMachines": 1,
+		"shardsPerCluster": 1
+	},
+	"voice": {
+		"audioPlayer": {
+			"pool": {
+				"minSize": 5,
+				"maxSize": 50,
+				"idleTimeoutMs": 300000,
+				"idleTimeoutPollRateMs": 600000
+			}
+		}
+	},
+	"redis": {
+		"db": {
+			"sessions": {
+				"url": "redis://default:iE6IEElWGkOHeOrFS1HKBdr7oM8kq6OW@redis-18206.c284.us-east1-2.gce.cloud.redislabs.com:18206"
+			}
+		}
+	},
+	"api": {
+		"port": 3001
+	},
+	"allowedGuilds": [
+		"828378526675370015",
+		"823497369319374858",
+		"748643857536909323",
+		"986574003395248129",
+		"655222004881948691",
+		"860216378845822996",
+		"965650935856660540",
+		"883727388624683008",
+		"810525863493238854",
+		"877360833280225301",
+		"919674409051111504",
+		"858963473936678912",
+		"776319301819826197",
+		"522829933454688278",
+		"960318937428545576"
+	]
+}

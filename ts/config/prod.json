@@ -1,0 +1,38 @@
+{
+	"app": {
+		"name": "pomomo-bot"
+	},
+	"bot": {
+		"token": "ODIxOTUyNDYwOTA5NDQ1MTMw.YFLM4Q.ZLZ26zG_9dT4kNgdTja9g_Hptqo",
+		"clientId": "821952460909445130"
+	},
+	"bridge": {
+		"host": "localhost",
+		"port": 4444,
+		"authToken": "EaA2gZnuGtrVzCAJydEL",
+    "totalShards": 25,
+		"totalMachines": 1,
+		"shardsPerCluster": 5
+	},
+	"voice": {
+		"audioPlayer": {
+			"pool": {
+				"minSize": 10,
+				"maxSize": 100,
+				"idleTimeoutMs": 300000,
+				"idleTimeoutPollRateMs": 600000
+			}
+		}
+	},
+	"redis": {
+		"db": {
+			"sessions": {
+				"url": "redis://default:iE6IEElWGkOHeOrFS1HKBdr7oM8kq6OW@redis-18206.c284.us-east1-2.gce.cloud.redislabs.com:18206"
+			}
+		}
+	},
+	"api": {
+		"port": 3001
+	},
+	"allowedGuilds": ["*"]
+}

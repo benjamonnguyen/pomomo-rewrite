@@ -31,6 +31,7 @@ client
 	.then((data) => {
 		if (!data || !data.shardList) return;
 		manager.totalShards = data.totalShards;
+		manager.totalClusters = data.shardList.length;
 		manager.shardList = data.shardList;
 		manager.clusterList = data.clusterList;
 		manager.spawn();

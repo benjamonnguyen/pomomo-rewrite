@@ -9,9 +9,7 @@ import {
 } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
 import { SessionSettingsBuilder } from 'pomomo-common/src/model/settings/session-settings';
-import {
-	buildSessionKey,
-} from 'pomomo-common/src/db/session-repo';
+import { buildSessionKey } from 'pomomo-common/src/db/session-repo';
 import sessionRepo from '../../db/session-repo';
 import { send } from '../../message/session-message';
 import { joinVoiceChannel } from '@discordjs/voice';
@@ -24,7 +22,6 @@ enum EOption {
 	SHORT_BREAK = 'short_break',
 	LONG_BREAK = 'long_break',
 	INTERVALS = 'intervals',
-	NAME = 'name',
 }
 
 export const command = new SlashCommandBuilder()
@@ -144,10 +141,7 @@ export const execute = async (interaction: CommandInteraction) => {
 		const member = interaction.member as GuildMember;
 		session.channelId = member.voice.channelId;
 
-		const timerMsg = await send(
-			session,
-			member.voice.channel as TextBasedChannel,
-		);
+		timerMsg = await send(session, member.voice.channel as TextBasedChannel);
 		session.timerMsgId = timerMsg.id;
 		await sessionRepo.insert(session);
 		interaction

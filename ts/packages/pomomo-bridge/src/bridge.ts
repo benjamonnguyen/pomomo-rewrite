@@ -51,6 +51,7 @@ class MyBridge extends Bridge {
 const bridge = new MyBridge({
 	port: config.get('bridge.port'),
 	authToken: config.get('bridge.authToken'),
+	totalShards: config.get('bridge.totalShards'),
 	totalMachines: config.get('bridge.totalMachines'),
 	shardsPerCluster: config.get('bridge.shardsPerCluster'),
 	token: config.get('bot.token'),

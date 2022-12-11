@@ -1,0 +1,42 @@
+{
+	"myUserId": 233068738386198539,
+	"command": {
+		"start": {
+			"max": 360,
+			"pomodoro": {
+				"default": 25
+			},
+			"shortBreak": {
+				"default": 5
+			},
+			"longBreak": {
+				"default": 20
+			},
+			"intervals": {
+				"default": 4
+			}
+		}
+	},
+	"session": {
+		"resolutionM": 5,
+		"maxCount": 2,
+		"idleTimeoutH": 2,
+		"premium": {
+			"maxCount": 10,
+			"idleTimeoutH": 24
+		}
+	},
+	"scheduler": {
+		"job": {
+			"session": {
+				"cronTime": "*/1 * * * *"
+			}
+		},
+		"batchSize": 20,
+		"lingerMs": 1000
+	},
+	"url": {
+		"supportServer": "https://discord.com/oauth2/authorize?client_id=821952460909445130&permissions=15739904&scope=bot",
+		"invite": "https://discord.com/oauth2/authorize?client_id=821952460909445130&permissions=15739904&scope=bot%20applications.commands"
+	}
+}

@@ -3,7 +3,7 @@ import { CommandMessage } from 'pomomo-common/src/command';
 import sessionRepo from '../../db/session-repo';
 import { TextBasedChannel } from 'discord.js';
 import { buildSessionKey } from 'pomomo-common/src/db/session-repo';
-import { end } from '../../loadable/buttons/end';
+import { end } from '../../loadable/buttons/end-button';
 import { playIdleResource } from '../../voice/audio-player';
 import { joinVoiceChannel } from '@discordjs/voice';
 
@@ -41,19 +41,27 @@ async function handle(command: CommandMessage): Promise<void> {
 				msg.delete().catch(console.error);
 				return Promise.all([
 					sessionRepo.client.json.del(sessionKey, '.idleCheck'),
-					sessionRepo.client.json.set(sessionKey, '.lastInteracted', new Date()),
+					sessionRepo.client.json.set(
+						sessionKey,
+						'.lastInteracted',
+						new Date(),
+					),
 				]);
 			})
 			.catch(() => {
 				console.error('check-idle.handle() - killing idle session');
 				sessionRepo
 					.get(command.targetGuildId, command.payload.channelId)
-					.then((session) => end(session).catch(console.error))
+					.then((session) => end(session, guild.members).catch(console.error))
 					.catch(console.error);
 				msg.edit({ content: 'Idle session ended' }).catch(console.error);
 			});
 	} catch (e) {
 		console.error('check-idle.handle() error', e);
+		sessionRepo
+			.get(command.targetGuildId, command.payload.channelId)
+			.then((session) => end(session).catch(console.error))
+			.catch(console.error);
 	}
 }
 
