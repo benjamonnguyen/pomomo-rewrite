@@ -41,13 +41,14 @@ export async function skip(
 	memberManager: GuildMemberManager,
 ): Promise<void> {
 	session.goNextState(true);
-	try {
-		await Promise.all([
-			sessionRepo.set(session),
-			update(session),
-			handleAutoshush(session, memberManager),
-		]);
-	} catch (e) {
-		Promise.reject(`skip.skip() error ${e}`);
-	}
+	const res = await Promise.allSettled([
+		sessionRepo.set(session),
+		update(session),
+		handleAutoshush(session, memberManager),
+	]);
+	res.forEach((r) => {
+		if (r.status === 'rejected') {
+			console.error('skip-button.skip() - error', r.reason);
+		}
+	});
 }

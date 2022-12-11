@@ -38,12 +38,19 @@ export const execute = async (interaction: ButtonInteraction) => {
 
 export async function end(
 	session: Session,
-	memberManager: GuildMemberManager,
+	memberManager?: GuildMemberManager,
 ): Promise<void> {
-	await endAutoshush(session, memberManager);
-	Promise.all([editEnd(session), sessionRepo.delete(session.id)]).catch((e) =>
-		console.error('end.end()', e),
-	);
+	const promises = [];
+	if (memberManager) {
+		promises.push(endAutoshush(session, memberManager));
+	}
+	promises.push([editEnd(session), sessionRepo.delete(session.id)]);
+	const res = await Promise.allSettled(promises);
+	res.forEach((r) => {
+		if (r.status === 'rejected') {
+			console.error('end-button.end() - error', r.reason);
+		}
+	});
 	try {
 		const conn = getVoiceConnection(session.guildId);
 		if (conn) {

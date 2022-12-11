@@ -15,7 +15,7 @@ const handle = async (commands: CommandMessage[]) => {
 				break;
 			case ECommand.CHECK_IDLE:
 				promises.push(handleCheckIdle(c));
-				break
+				break;
 			default:
 				console.error(`handler not implemented for command: ${c.commandType}`);
 		}

@@ -8,6 +8,7 @@
 	"scripts": {
 		"dev": "export NODE_CONFIG_DIR=../../config && export IS_CLUSTERED=true && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node .",
 		"dev-no-cluster": "export NODE_CONFIG_DIR=../../config && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/bot.js",
+		"prod": "export NODE_CONFIG_DIR=../../config && export IS_CLUSTERED=true && export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node .",
 		"test": "jest",
 		"register-commands-dev": "export NODE_CONFIG_DIR=../../config && export NODE_ENV=dev && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js",
 		"register-commands-prod": "export NODE_CONFIG_DIR=../../config && export NODE_ENV=prod && node --experimental-modules --es-module-specifier-resolution=node dist/register-commands.js"

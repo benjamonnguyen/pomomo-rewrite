@@ -20,13 +20,19 @@ export async function add(guildId: string, channelId: string, userId: string) {
 	await sessionRepo.client.sAdd(key, userId);
 }
 
-export async function remove(guildId: string, channelId: string, userId: string) {
+export async function remove(
+	guildId: string,
+	channelId: string,
+	userId: string,
+) {
 	const key = buildSessionFocusMembersKey(guildId, channelId);
+	console.info('focus-member-repo.remove -', key);
 	await sessionRepo.client.sRem(key, userId);
 }
 
 export async function del(userId: string): Promise<number> {
 	const key = buildFocusMemberKey(userId);
+	console.info('focus-member-repo.del -', key);
 	return await sessionRepo.client.json.del(key);
 }
 
@@ -40,6 +46,9 @@ export async function toggleDeafen(userId: string): Promise<boolean> {
 	return Promise.resolve(!deafen);
 }
 
-export function buildSessionFocusMembersKey(guildId: string, channelId: string) {
+export function buildSessionFocusMembersKey(
+	guildId: string,
+	channelId: string,
+) {
 	return `session:info#g${guildId}c${channelId}:focusMembers`;
 }

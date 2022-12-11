@@ -4,7 +4,7 @@ import sessionRepo from '../../db/session-repo';
 import { update } from '../../message/session-message';
 import { joinVoiceChannel } from '@discordjs/voice';
 import discordClient from '../../bot';
-import { handleAutoshush } from '../../autoshush';
+// import { handleAutoshush } from '../../autoshush';
 
 async function handle(command: CommandMessage): Promise<void> {
 	console.debug('go-next-state.handle() ~', command.payload);
@@ -19,7 +19,7 @@ async function handle(command: CommandMessage): Promise<void> {
 	session.goNextState();
 	await sessionRepo.set(session);
 
-	await handleAutoshush(session, guild.members);
+	// TODO await handleAutoshush(session, guild.members);
 
 	const conn = joinVoiceChannel({
 		channelId: session.channelId,

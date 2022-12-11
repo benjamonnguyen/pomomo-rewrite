@@ -82,7 +82,10 @@ export const send = async (s: Session, channel: TextBasedChannel) => {
 	return channel.send({
 		content: getGreeting(),
 		embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-		components: [primaryActionRow(s), secondaryActionRow()],
+		components: [
+			primaryActionRow(s),
+			// secondaryActionRow(),
+		],
 	});
 };
 

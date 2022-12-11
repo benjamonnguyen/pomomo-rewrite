@@ -1,10 +1,10 @@
-import { ButtonInteraction, CommandInteraction, Interaction } from "discord.js";
-import { handleInteractionError } from "../../handler/error/error-handler";
+import { ButtonInteraction, CommandInteraction, Interaction } from 'discord.js';
+import { handleInteractionError } from '../../handler/error/error-handler';
 import handleCommandInteraction from '../../handler/interaction/command-interaction-handler';
 import handleButtonInteraction from '../../handler/interaction/button-interaction-handler';
 
 const handle = async (interaction: Interaction) => {
-  try {
+	try {
 		if (interaction.isButton()) {
 			await handleButtonInteraction(interaction as ButtonInteraction);
 		} else if (interaction.isCommand()) {
@@ -13,6 +13,6 @@ const handle = async (interaction: Interaction) => {
 	} catch (e) {
 		await handleInteractionError(interaction, e as Error);
 	}
-}
+};
 
 export default handle;

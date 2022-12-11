@@ -37,7 +37,10 @@ export const execute = async (interaction: ButtonInteraction) => {
 		]);
 	} catch (e) {
 		console.error(BUTTON_ID, e);
-		await interaction.reply({ content: 'Try re-activating focus mode!' });
+		await interaction.reply({
+			content: 'Try re-activating focus mode!',
+			embeds: [buildErrorEmbed()],
+		});
 		return;
 	}
 	await interaction.deferUpdate();

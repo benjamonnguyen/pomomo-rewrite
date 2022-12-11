@@ -58,6 +58,10 @@ async function handle(command: CommandMessage): Promise<void> {
 			});
 	} catch (e) {
 		console.error('check-idle.handle() error', e);
+		sessionRepo
+			.get(command.targetGuildId, command.payload.channelId)
+			.then((session) => end(session).catch(console.error))
+			.catch(console.error);
 	}
 }
 

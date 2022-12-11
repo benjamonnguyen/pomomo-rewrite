@@ -8,7 +8,7 @@ bridge
 	.then((b) => console.info(`bridge started: ${JSON.stringify(b, null, 2)}`));
 
 job.start();
-console.info(`started scheduler job!`);
+console.info('started scheduler job!');
 
 const gracefulShutdown = () => {
 	console.info('Starting graceful shutdown...');

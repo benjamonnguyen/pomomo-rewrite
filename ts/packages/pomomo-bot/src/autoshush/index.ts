@@ -20,6 +20,7 @@ export async function handleAutoshush(
 		targetUserIds,
 	);
 
+	if (!members.length) return;
 	const autoshushPromises = [];
 	const focusMembers = await sessionRepo.client.json.mGet(focusMemberKeys, '.');
 	for (let i = 0; i < focusMembers.length; i++) {
@@ -64,6 +65,7 @@ export async function endAutoshush(
 		targetUserIds,
 	);
 
+	if (!members.length) return;
 	const autoshushPromises = [];
 	const focusMembers = await sessionRepo.client.json.mGet(focusMemberKeys, '.');
 	for (let i = 0; i < focusMembers.length; i++) {
@@ -94,7 +96,12 @@ export async function endAutoshush(
 			),
 		);
 	}
-	await Promise.allSettled([autoshushPromises]);
+	const res = await Promise.allSettled([autoshushPromises]);
+	res.forEach((r) => {
+		if (r.status === 'rejected') {
+			console.error('endAutoshush() -', r.reason);
+		}
+	});
 }
 
 async function buildFocusMemberKeysAndMembers(
@@ -127,5 +134,7 @@ async function buildFocusMemberKeysAndMembers(
 		}
 	}
 
-	return { focusMemberKeys, members };
+	const res = { focusMemberKeys, members };
+	console.debug('buildFocusMemberKeysAndMembers() -', focusMemberKeys);
+	return res;
 }
