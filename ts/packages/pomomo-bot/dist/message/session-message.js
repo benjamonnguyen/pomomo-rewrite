@@ -71,7 +71,7 @@ export const update = async (s) => {
         msg = await discordClient.fetchMessage(s.guildId, s.channelId, s.timerMsgId);
     }
     catch (e) {
-        console.error('session-message.update() can\'t find timerMsg', e);
+        console.error("session-message.update() can't find timerMsg", e);
         sessionRepo.delete(s.id).catch(console.error);
     }
     sessionRepo.client.json
@@ -81,7 +81,10 @@ export const update = async (s) => {
         msg
             .edit({
             embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-            components: [primaryActionRow(s), secondaryActionRow()],
+            components: [
+                primaryActionRow(s),
+                // secondaryActionRow(),
+            ],
         })
             .catch(console.error);
     }

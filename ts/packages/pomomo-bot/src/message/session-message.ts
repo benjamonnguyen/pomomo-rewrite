@@ -98,7 +98,7 @@ export const update = async (s: Session) => {
 			s.timerMsgId,
 		);
 	} catch (e) {
-		console.error('session-message.update() can\'t find timerMsg', e);
+		console.error("session-message.update() can't find timerMsg", e);
 		sessionRepo.delete(s.id).catch(console.error);
 	}
 
@@ -110,7 +110,10 @@ export const update = async (s: Session) => {
 		msg
 			.edit({
 				embeds: [sessionSettingsEmbed(s), timerStatusEmbed(s)],
-				components: [primaryActionRow(s), secondaryActionRow()],
+				components: [
+					primaryActionRow(s),
+					// secondaryActionRow(),
+				],
 			})
 			.catch(console.error);
 	}
