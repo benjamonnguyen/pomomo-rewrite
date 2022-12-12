@@ -14,7 +14,7 @@ To start a pomodoro session, join a voice channel and use slash command `/start`
 
 Visit [pomomo.us](https://pomomo.us) or join the [support server](https://discord.gg/Aghy78wcFr) for more info!
 
-<img src="./assets/start-message.png" style="max-width: 30em;" />
+<img src="./assets/start-message.png" style="max-width: 10rem;" />
 
 ## Design
 
