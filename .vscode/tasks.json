@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "typescript",
+      "tsconfig": "ts/packages/pomomo-bot/tsconfig.json",
+      "problemMatcher": ["$tsc"],
+      "group": "build",
+      "label": "tsc: build - pomomo-bot"
+    },
+    {
+      "type": "typescript",
+      "tsconfig": "ts/packages/pomomo-bridge/tsconfig.json",
+      "problemMatcher": ["$tsc"],
+      "group": "build",
+      "label": "tsc: build - pomomo-bridge"
+    },
+    {
+      "type": "typescript",
+      "tsconfig": "ts/packages/pomomo-common/tsconfig.json",
+      "problemMatcher": ["$tsc"],
+      "group": "build",
+      "label": "tsc: build - common"
+    },
+    {
+      "dependsOn": [
+        "tsc: build - pomomo-bot",
+        "tsc: build - pomomo-bridge",
+        "tsc: build - common"
+      ],
+      "group": "build",
+      "label": "tsc: build - all"
+    }
+  ]
+}

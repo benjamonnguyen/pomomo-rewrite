@@ -1,5 +1,6 @@
-.vscode
+# .vscode
 .DS_Store
 
 # secrets
 .env
+# config
