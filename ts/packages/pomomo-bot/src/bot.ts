@@ -49,7 +49,7 @@ export class MyDiscordClient extends Client {
 			return channel.messages.fetch(messageId);
 		} catch (e) {
 			console.error('MyDiscordClient.fetchTimerMsg()', e);
-			Promise.reject(e);
+			return Promise.reject(e);
 		}
 	}
 

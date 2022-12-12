@@ -9,19 +9,31 @@ export async function handleInteractionError(
 	interaction: Interaction,
 	e: Error,
 ) {
-	console.warn('error-handler.handleInteractionError()', e);
+	console.warn(
+		'----------\nerror-handler.handleInteractionError()',
+		e,
+		'\n----------',
+	);
 	if (e instanceof DiscordAPIError) {
 		if (e.status === 403) {
 			if (e.code === ErrorCode.MISSING_ACCESS) {
 				return await _reply(
 					interaction,
-					'Pomomo is missing access!\nCheck the voice channel permission settings or grant Pomomo access if the channel is private.\n',
+					'Pomomo is missing access!\nCheck your voice channel permission settings or grant Pomomo access if the channel is private.\n',
 				);
 			}
 			return await _reply(
 				interaction,
 				`Pomomo is missing permissions!\nUse this link to re-invite: ${INVITE_URL}`,
 			);
+		}
+		if (e.status === 404) {
+			if (e.code === ErrorCode.UNKNOWN_INTERACTION) {
+				return await _reply(
+					interaction,
+					`Pomomo is missing permissions!\nUse this link to re-invite: ${INVITE_URL}`,
+				);
+			}
 		}
 	}
 

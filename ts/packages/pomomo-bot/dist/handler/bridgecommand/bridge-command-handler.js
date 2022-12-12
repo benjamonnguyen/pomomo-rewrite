@@ -1,0 +1,30 @@
+import { ECommand } from 'pomomo-common/src/command';
+import handleUpdateTimer from './update-timer-handler';
+import handleGoNextState from './go-next-state-handler';
+import handleCheckIdle from './check-idle-handler';
+const handle = async (commands) => {
+    const promises = [];
+    commands.forEach((c) => {
+        switch (c.commandType) {
+            case ECommand.UPDATE_TIMER:
+                promises.push(handleUpdateTimer(c));
+                break;
+            case ECommand.GO_NEXT_STATE:
+                promises.push(handleGoNextState(c));
+                break;
+            case ECommand.CHECK_IDLE:
+                promises.push(handleCheckIdle(c));
+                break;
+            default:
+                console.error(`handler not implemented for command: ${c.commandType}`);
+        }
+    });
+    try {
+        return await Promise.allSettled(promises);
+    }
+    catch (message) {
+        return console.error(message);
+    }
+};
+export default handle;
+//# sourceMappingURL=bridge-command-handler.js.map

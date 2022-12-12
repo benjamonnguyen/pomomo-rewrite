@@ -21,6 +21,10 @@ export class CommandMessage {
 		this.targetGuildId = targetGuildId;
 		this.options = options;
 	}
+
+	toString() {
+		return `{commandType: ${ECommand[this.commandType]}, targetGuildId: ${this.targetGuildId}}`;
+	}
 }
 
 export interface Payload {

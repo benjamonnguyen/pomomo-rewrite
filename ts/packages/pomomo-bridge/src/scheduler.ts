@@ -30,14 +30,13 @@ export const job = new CronJob(
 		for await (const key of sessionRepo.client.scanIterator({
 			MATCH: 'session#*',
 		})) {
-			console.log('cron job ~ processing', key);
+			// console.log('cron job ~ processing', key);
 			const session = plainToInstance(
 				Session,
 				await sessionRepo.client.json.get(key),
 			);
 
 			if (session.idleCheck) {
-				console.debug('idleCheck');
 				if (
 					(new Date().getTime() - session.idleCheck.getTime()) / 3600000 >=
 					24
@@ -48,16 +47,14 @@ export const job = new CronJob(
 						.catch(console.error);
 				}
 			} else if (session.isIdle()) {
-				console.debug('isIdle', session.id);
 				commands.push(createCheckIdleCmd(session.guildId, session.channelId));
 			}
 
 			if (!session.timer.isRunning) {
-				console.debug('not running', session.id);
+				continue;
 			} else {
 				const now = new Date();
 				if (session.timer.calcSecondsSince(now) <= 0) {
-					console.debug('goNextState', session.id);
 					const cmd = createGoNextStateCmd(session.guildId, session.channelId);
 					if (cmd) {
 						commands.push(cmd);
@@ -73,9 +70,8 @@ export const job = new CronJob(
 							RESOLUTION_M,
 						);
 					if (hours === lastUpdatedH && minutes === lastUpdatedM) {
-						console.debug('no timer change since lastUpdate');
+						continue;
 					} else {
-						console.debug('updateTimer', session.id);
 						const cmd = createUpdateTimerCmd(
 							session.guildId,
 							session.channelId,
@@ -87,11 +83,6 @@ export const job = new CronJob(
 				}
 			}
 
-			console.debug(
-				`scheduler batchSize: ${
-					commands.length
-				} - lastBatch.diffNow() ${lastBatch.diffNow()}`,
-			);
 			if (
 				commands.length &&
 				(commands.length >= BATCH_SIZE || lastBatch.diffNow() >= LINGER_MS)

@@ -1,0 +1,93 @@
+import { plainToInstance } from 'class-transformer';
+import sessionRepo from '../db/session-repo';
+import { ESessionState } from 'pomomo-common/src/model/session';
+import { buildFocusMemberKey, FocusMember, } from 'pomomo-common/src/model/focus-member';
+import { buildSessionFocusMembersKey } from '../db/focus-member-repo';
+import * as focusMemberRepo from '../db/focus-member-repo';
+export async function handleAutoshush(session, memberManager, targetUserIds) {
+    const { focusMemberKeys, members } = await buildFocusMemberKeysAndMembers(session, memberManager, targetUserIds);
+    if (!members.length)
+        return;
+    const autoshushPromises = [];
+    const focusMembers = await sessionRepo.client.json.mGet(focusMemberKeys, '.');
+    for (let i = 0; i < focusMembers.length; i++) {
+        const json = focusMembers.at(i);
+        if (!json) {
+            continue;
+        }
+        const focusMember = plainToInstance(FocusMember, json);
+        if (session.guildId != focusMember.guildId ||
+            session.channelId != focusMember.channelId) {
+            continue;
+        }
+        const member = members.at(i);
+        if (!focusMember.serverDeaf && focusMember.deafen) {
+            autoshushPromises.push(member.voice.setDeaf(session.state === ESessionState.POMODORO && session.timer.isRunning));
+        }
+        if (!focusMember.serverMute) {
+            autoshushPromises.push(member.voice.setMute(session.state === ESessionState.POMODORO && session.timer.isRunning));
+        }
+    }
+    await Promise.allSettled(autoshushPromises);
+}
+export async function endAutoshush(session, memberManager, targetUserIds) {
+    const { focusMemberKeys, members } = await buildFocusMemberKeysAndMembers(session, memberManager, targetUserIds);
+    if (!members.length)
+        return;
+    const autoshushPromises = [];
+    const focusMembers = await sessionRepo.client.json.mGet(focusMemberKeys, '.');
+    for (let i = 0; i < focusMembers.length; i++) {
+        const json = focusMembers.at(i);
+        if (!json) {
+            continue;
+        }
+        const focusMember = plainToInstance(FocusMember, json);
+        if (session.guildId != focusMember.guildId ||
+            session.channelId != focusMember.channelId) {
+            continue;
+        }
+        const member = members.at(i);
+        if (!focusMember.serverDeaf && focusMember.deafen) {
+            autoshushPromises.push(member.voice.setDeaf(false));
+        }
+        if (!focusMember.serverMute) {
+            autoshushPromises.push(member.voice.setMute(false));
+        }
+        autoshushPromises.push(focusMemberRepo.del(member.id));
+        autoshushPromises.push(focusMemberRepo.remove(focusMember.guildId, focusMember.channelId, member.id));
+    }
+    const res = await Promise.allSettled([autoshushPromises]);
+    res.forEach((r) => {
+        if (r.status === 'rejected') {
+            console.error('endAutoshush() -', r.reason);
+        }
+    });
+}
+async function buildFocusMemberKeysAndMembers(session, memberManager, targetUserIds) {
+    let countdown = -1;
+    if (targetUserIds) {
+        countdown = targetUserIds.size;
+    }
+    const focusMemberKeys = [];
+    const members = [];
+    for await (const userId of sessionRepo.client.sScanIterator(buildSessionFocusMembersKey(session.guildId, session.channelId))) {
+        if (!countdown) {
+            break;
+        }
+        if (countdown > 0 && !targetUserIds.has(userId)) {
+            countdown--;
+            continue;
+        }
+        focusMemberKeys.push(buildFocusMemberKey(userId));
+        try {
+            members.push(await memberManager.fetch(userId));
+        }
+        catch (e) {
+            console.error('autoshush - error', e);
+        }
+    }
+    const res = { focusMemberKeys, members };
+    console.debug('buildFocusMemberKeysAndMembers() -', focusMemberKeys);
+    return res;
+}
+//# sourceMappingURL=index.js.map

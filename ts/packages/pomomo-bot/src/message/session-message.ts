@@ -90,8 +90,6 @@ export const send = async (s: Session, channel: TextBasedChannel) => {
 };
 
 export const update = async (s: Session) => {
-	console.debug('session-message.update() ~', s.id);
-
 	let msg;
 	try {
 		msg = await discordClient.fetchMessage(
@@ -100,7 +98,7 @@ export const update = async (s: Session) => {
 			s.timerMsgId,
 		);
 	} catch (e) {
-		console.error("session-message.update() can't find timerMsg", e);
+		console.error('session-message.update() can\'t find timerMsg', e);
 		sessionRepo.delete(s.id).catch(console.error);
 	}
 

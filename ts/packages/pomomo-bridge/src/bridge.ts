@@ -9,7 +9,6 @@ class MyBridge extends Bridge {
 	}
 
 	async sendCommands(commands: CommandMessage[]) {
-		console.debug('bridge.sendCommands() ~ count', commands.length);
 		const clientIdToCommands: Map<string, CommandMessage[]> = new Map();
 		this.clients.forEach((client, _) => clientIdToCommands.set(client.id, []));
 
@@ -38,7 +37,7 @@ class MyBridge extends Bridge {
 		this.clients.forEach((client) => {
 			const cmds = clientIdToCommands.get(client.id);
 			console.debug(
-				`bridge.sendCommands() ~ sending ${cmds.length} commands to clientId ${client.id}`,
+				`bridge.sendCommands() ~ sending commands to clientId ${client.id}: ${cmds}`,
 			);
 			const payload = { guildId: cmds[0].targetGuildId, commands: cmds };
 			promises.push(this.requestToGuild(payload));
