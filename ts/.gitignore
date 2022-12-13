@@ -126,3 +126,7 @@ out
 .pnp.*
 
 test.js
+
+# secrets
+config/prod.json
+config/dev.json
