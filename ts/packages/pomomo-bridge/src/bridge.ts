@@ -58,7 +58,9 @@ const bridge = new MyBridge({
 	shardsPerCluster: config.get('bridge.shardsPerCluster'),
 	token: config.get('bot.token'),
 });
-bridge.on('debug', logger.info);
-bridge.on('clientMessage', (msg, client) => logger.debug(`Received msg from client ${client}: ${msg}`));
+bridge.on('debug', (log) => logger.info(log));
+bridge.on('clientMessage', (msg, client) =>
+	logger.debug(`Received msg from client ${client}: ${msg}`),
+);
 
 export default bridge;
