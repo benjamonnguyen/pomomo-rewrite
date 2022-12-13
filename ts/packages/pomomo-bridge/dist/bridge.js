@@ -1,4 +1,5 @@
 import config from 'config';
+import logger from 'pomomo-common/src/logger';
 import { Bridge } from 'discord-cross-hosting';
 import { shardIdForGuildId } from 'discord-hybrid-sharding';
 class MyBridge extends Bridge {
@@ -12,7 +13,7 @@ class MyBridge extends Bridge {
             const internalShard = shardIdForGuildId(msg.targetGuildId, this.totalShards);
             const targetClient = Array.from(this.clients.values()).find((x) => x?.shardList?.flat()?.includes(internalShard));
             if (!targetClient) {
-                console.error('bridge.sendCommands() ~ no client found for internalShard', internalShard);
+                logger.error('bridge.sendCommands() - no client found for internalShard', internalShard, '- unsent commandMessage:', msg);
                 continue;
             }
             if (!msg.options)
@@ -23,7 +24,7 @@ class MyBridge extends Bridge {
         const promises = [];
         this.clients.forEach((client) => {
             const cmds = clientIdToCommands.get(client.id);
-            console.debug(`bridge.sendCommands() ~ sending commands to clientId ${client.id}: ${cmds}`);
+            logger.debug(`bridge.sendCommands() ~ sending commands to clientId ${client.id}: ${cmds}`);
             const payload = { guildId: cmds[0].targetGuildId, commands: cmds };
             promises.push(this.requestToGuild(payload));
         });
@@ -38,7 +39,7 @@ const bridge = new MyBridge({
     shardsPerCluster: config.get('bridge.shardsPerCluster'),
     token: config.get('bot.token'),
 });
-bridge.on('debug', console.debug);
-bridge.on('clientMessage', console.debug);
+bridge.on('debug', logger.info);
+bridge.on('clientMessage', (msg, client) => logger.debug(`Received msg from client ${client}: ${msg}`));
 export default bridge;
 //# sourceMappingURL=bridge.js.map

@@ -1,4 +1,5 @@
 import config from 'config';
+import logger from 'pomomo-common/src/logger';
 import { CronJob } from 'cron';
 import sessionRepo from './db/session-repo';
 import { plainToInstance } from 'class-transformer';
@@ -20,15 +21,14 @@ export const job = new CronJob(config.get('scheduler.job.session.cronTime'), asy
     for await (const key of sessionRepo.client.scanIterator({
         MATCH: 'session#*',
     })) {
-        // console.log('cron job ~ processing', key);
         const session = plainToInstance(Session, await sessionRepo.client.json.get(key));
         if (session.idleCheck) {
             if ((new Date().getTime() - session.idleCheck.getTime()) / 3600000 >=
                 24) {
                 sessionRepo
                     .delete(session.id)
-                    .then(() => console.warn('idleCheck timed out -', session.id))
-                    .catch(console.error);
+                    .then(() => logger.debug('idleCheck timed out -', session.id))
+                    .catch(logger.error);
             }
         }
         else if (session.isIdle()) {
@@ -61,13 +61,13 @@ export const job = new CronJob(config.get('scheduler.job.session.cronTime'), asy
         }
         if (commands.length &&
             (commands.length >= BATCH_SIZE || lastBatch.diffNow() >= LINGER_MS)) {
-            bridge.sendCommands([...commands]).catch(console.error);
+            bridge.sendCommands([...commands]).catch(logger.error);
             commands = [];
             lastBatch = DateTime.now();
         }
     }
     if (commands.length) {
-        bridge.sendCommands(commands).catch(console.error);
+        bridge.sendCommands(commands).catch(logger.error);
     }
 });
 //# sourceMappingURL=scheduler.js.map
