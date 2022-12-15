@@ -14,7 +14,7 @@
 		"./src/util/timer-util": "./dist/util/timer-util.js",
 		"./src/discord/error": "./dist/discord/error.js",
 		"./src/model/focus-member": "./dist/model/focus-member.js",
-		"./src/logger": "./dist/logger/index.js"
+		"./src/log": "./dist/log/index.js"
 	},
 	"scripts": {},
 	"author": "benjinguyen",
