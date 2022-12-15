@@ -1,4 +1,4 @@
-import logger from 'pomomo-common/src/logger';
+import { logger } from 'pomomo-common/src/log';
 import { CommandMessage, ECommand, Payload } from 'pomomo-common/src/command';
 
 export function createUpdateTimerCmd(

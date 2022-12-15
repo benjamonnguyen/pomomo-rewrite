@@ -90,7 +90,7 @@ discordClient.once('ready', (client) => {
 	);
 });
 discordClient.on('shardReady', (data) => console.info('shardReady: ' + data));
-discordClient.on('shardDisconnect', () => console.info('shardDisconnected'));
+discordClient.on('shardDisconnect', () => console.info('shardDisconnect'));
 discordClient.on('shardReconnecting', (data) =>
 	console.info('shardReconnecting: ' + data),
 );
@@ -107,8 +107,9 @@ const gracefulShutdown = () => {
 		.then(() => console.info('sessionsClient quitted!'))
 		.catch(console.error);
 	try {
+		const clientId = discordClient.cluster?.id;
 		discordClient.destroy();
-		console.info('discordClient destroyed!');
+		console.info('discordClient destroyed!', clientId);
 	} catch (e) {
 		console.error(e);
 	}

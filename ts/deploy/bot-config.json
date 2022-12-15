@@ -1,0 +1,13 @@
+{
+	"apps": [
+		{
+			"name": "bot",
+			"script": "node --experimental-modules --es-module-specifier-resolution=node ../packages/pomomo-bot/dist/index.js ",
+			"env": {
+				"NODE_CONFIG_DIR": "../config",
+				"NODE_ENV": "prod",
+				"IS_CLUSTERED": true
+			}
+		}
+	]
+}
