@@ -14,9 +14,9 @@ export const execute = async (interaction) => {
     const member = interaction.member;
     const msg = await member.send(buildFocusMessage(interaction.channel.name, false));
     interaction.channel.messages.cache.set(msg.id, msg);
-    const focusMember = await focusMemberRepo.get(interaction.user.id);
+    let focusMember = await focusMemberRepo.get(interaction.user.id);
     if (!focusMember) {
-        const focusMember = {
+        focusMember = {
             messageId: msg.id,
             deafen: false,
             guildId: interaction.guildId,

@@ -1,4 +1,3 @@
-import { handleAutoshush } from '../../autoshush';
 import { instanceToPlain } from 'class-transformer';
 import { ButtonBuilder, ButtonStyle, ButtonInteraction } from 'discord.js';
 import { Session } from 'pomomo-common/src/model/session';
@@ -30,9 +29,12 @@ export const execute = async (interaction: ButtonInteraction) => {
 
 		await Promise.all([
 			sessionRepo.client.json.set(session.id, '.lastInteracted', new Date()),
-			sessionRepo.client.json
-				.set(session.id, '.timer', instanceToPlain(session.timer))
-				.then(() => handleAutoshush(session, interaction.guild.members)),
+			sessionRepo.client.json.set(
+				session.id,
+				'.timer',
+				instanceToPlain(session.timer),
+			),
+			// .then(() => handleAutoshush(session, interaction.guild.members)),
 		]);
 	} catch (e) {
 		console.error('pause-resume.execute() error', e);

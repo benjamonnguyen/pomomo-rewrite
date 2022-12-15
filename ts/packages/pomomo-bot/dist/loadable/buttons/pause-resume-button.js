@@ -1,4 +1,3 @@
-import { handleAutoshush } from '../../autoshush';
 import { instanceToPlain } from 'class-transformer';
 import { ButtonBuilder, ButtonStyle } from 'discord.js';
 import sessionRepo from '../../db/session-repo';
@@ -21,9 +20,8 @@ export const execute = async (interaction) => {
         }
         await Promise.all([
             sessionRepo.client.json.set(session.id, '.lastInteracted', new Date()),
-            sessionRepo.client.json
-                .set(session.id, '.timer', instanceToPlain(session.timer))
-                .then(() => handleAutoshush(session, interaction.guild.members)),
+            sessionRepo.client.json.set(session.id, '.timer', instanceToPlain(session.timer)),
+            // .then(() => handleAutoshush(session, interaction.guild.members)),
         ]);
     }
     catch (e) {

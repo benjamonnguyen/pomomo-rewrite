@@ -1,8 +1,7 @@
 import sessionRepo from '../../db/session-repo';
-import { ButtonBuilder, ButtonStyle, } from 'discord.js';
+import { ButtonBuilder, ButtonStyle } from 'discord.js';
 import { editEnd } from '../../message/session-message';
 import { getVoiceConnection } from '@discordjs/voice';
-import { endAutoshush } from '../../autoshush';
 export const BUTTON_ID = 'endBtn';
 export const endBtn = () => {
     return new ButtonBuilder()
@@ -13,7 +12,7 @@ export const endBtn = () => {
 export const execute = async (interaction) => {
     try {
         const session = await sessionRepo.get(interaction.guildId, interaction.channelId);
-        await end(session, interaction.guild.members);
+        await end(session);
     }
     catch (e) {
         console.error('end.execute() ~', e);
@@ -24,11 +23,11 @@ export const execute = async (interaction) => {
             .catch(console.error);
     }
 };
-export async function end(session, memberManager) {
+export async function end(session) {
     const promises = [];
-    if (memberManager) {
-        promises.push(endAutoshush(session, memberManager));
-    }
+    // if (memberManager) {
+    // 	promises.push(endAutoshush(session, memberManager));
+    // }
     promises.push([editEnd(session), sessionRepo.delete(session.id)]);
     const res = await Promise.allSettled(promises);
     res.forEach((r) => {

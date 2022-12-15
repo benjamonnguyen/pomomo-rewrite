@@ -2,9 +2,6 @@ import { ButtonBuilder, ButtonStyle } from 'discord.js';
 import * as focusMemberRepo from '../../db/focus-member-repo';
 import { buildErrorEmbed } from '../../message/error-message';
 import { buildFocusMessage } from '../../message/focus-message';
-import { handleAutoshush } from '../../autoshush';
-import sessionRepo from '../../db/session-repo';
-import discordClient from '../../bot';
 export const BUTTON_ID = 'toggleDeafenBtn';
 export const toggleDeafenBtn = (deafen) => {
     return new ButtonBuilder()
@@ -19,13 +16,12 @@ export const execute = async (interaction) => {
         interaction.reply({ embeds: [buildErrorEmbed()], ephemeral: true });
         return;
     }
-    const guild = await discordClient.guilds.fetch(focusMember.guildId);
-    const session = await sessionRepo.get(guild.id, focusMember.channelId);
+    // const guild = await discordClient.guilds.fetch(focusMember.guildId);
+    // const session = await sessionRepo.get(guild.id, focusMember.channelId);
     const deafen = await focusMemberRepo.toggleDeafen(interaction.user.id);
     try {
         await Promise.all([
-            handleAutoshush(session, guild.members, new Set([interaction.user.id])),
-            ,
+            // handleAutoshush(session, guild.members, new Set([interaction.user.id])),
             interaction.message.edit(buildFocusMessage(focusMember.channelName, deafen)),
         ]);
     }

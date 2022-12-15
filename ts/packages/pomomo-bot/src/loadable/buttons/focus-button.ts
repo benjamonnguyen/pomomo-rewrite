@@ -6,7 +6,6 @@ import {
 	Message,
 } from 'discord.js';
 import * as focusMemberRepo from '../../db/focus-member-repo';
-import { FocusMember } from 'pomomo-common/src/model/focus-member';
 import { buildFocusMessage } from '../../message/focus-message';
 import { handleAutoshush } from '../../autoshush';
 import sessionRepo from '../../db/session-repo';
@@ -30,9 +29,9 @@ export const execute = async (interaction: ButtonInteraction) => {
 		msg as unknown as Message<true>,
 	);
 
-	const focusMember = await focusMemberRepo.get(interaction.user.id);
+	let focusMember = await focusMemberRepo.get(interaction.user.id);
 	if (!focusMember) {
-		const focusMember: FocusMember = {
+		focusMember = {
 			messageId: msg.id,
 			deafen: false,
 			guildId: interaction.guildId,
