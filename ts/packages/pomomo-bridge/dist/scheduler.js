@@ -1,5 +1,5 @@
 import config from 'config';
-import logger from 'pomomo-common/src/logger';
+import { logger } from 'pomomo-common/src/log';
 import { CronJob } from 'cron';
 import sessionRepo from './db/session-repo';
 import { plainToInstance } from 'class-transformer';
