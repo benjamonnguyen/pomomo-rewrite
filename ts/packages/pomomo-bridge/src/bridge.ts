@@ -1,5 +1,5 @@
 import config from 'config';
-import { logger } from 'pomomo-common/src/log';
+import logger from 'pomomo-common/src/logger';
 import { Bridge, BridgeOptions } from 'discord-cross-hosting';
 import { CommandMessage } from 'pomomo-common/src/command';
 import { shardIdForGuildId } from 'discord-hybrid-sharding';
@@ -23,7 +23,10 @@ class MyBridge extends Bridge {
 			);
 			if (!targetClient) {
 				logger.error(
-					`bridge.sendCommands() - no client found for internalShard ${internalShard} - unsent commandMessage: ${msg}`,
+					'bridge.sendCommands() - no client found for internalShard',
+					internalShard,
+					'- unsent commandMessage:',
+					msg,
 				);
 				continue;
 			}
@@ -56,13 +59,8 @@ const bridge = new MyBridge({
 	token: config.get('bot.token'),
 });
 bridge.on('debug', (log) => logger.info(log));
-bridge.on(
-	'clientMessage',
-	(msg, client) => logger.info(`Received msg from client ${client.id}: ${msg}`),
-	// if (Object.hasOwn(msg, 'logLevel') && Object.hasOwn(msg, 'msg')) {
-	// 	log(msg['logLevel'] as ELogLevel, msg['msg'] as string);
-	// }
-	// client.
+bridge.on('clientMessage', (msg, client) =>
+	logger.debug(`Received msg from client ${client}: ${msg}`),
 );
 
 export default bridge;

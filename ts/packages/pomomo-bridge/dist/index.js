@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { logger } from 'pomomo-common/src/log';
+import logger from 'pomomo-common/src/logger';
 import bridge from './bridge';
 import sessionRepo from './db/session-repo';
 import { job } from './scheduler';

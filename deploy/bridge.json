@@ -1,0 +1,12 @@
+{
+	"apps": [
+		{
+			"name": "bridge",
+			"script": "node --experimental-modules --es-module-specifier-resolution=node ../ts/packages/pomomo-bridge/dist/index.js ",
+			"env": {
+				"NODE_CONFIG_DIR": "../ts/config",
+				"NODE_ENV": "prod"
+			}
+		}
+	]
+}

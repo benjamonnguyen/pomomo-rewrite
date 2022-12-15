@@ -1,4 +1,4 @@
-import { logger } from 'pomomo-common/src/log';
+import logger from 'pomomo-common/src/logger';
 import { CommandMessage, ECommand } from 'pomomo-common/src/command';
 export function createUpdateTimerCmd(guildId, channelId) {
     for (const arg of arguments) {
