@@ -84,6 +84,20 @@ discordClient.on('error', (data) =>
 );
 discordClient.on('warn', (data) => console.warn('discordClient warn: ' + data));
 discordClient.on('cacheSweep', (data) => console.info('cacheSweep: ' + data));
+<<<<<<< HEAD
+=======
+discordClient.once('ready', (client) => {
+	console.info(
+		'discordClient ready: ' + JSON.stringify(client.options, null, 2),
+	);
+});
+discordClient.on('shardReady', (data) => console.info('shardReady: ' + data));
+discordClient.on('shardDisconnect', () => console.info('shardDisconnected'));
+discordClient.on('shardReconnecting', (data) =>
+	console.info('shardReconnecting: ' + data),
+);
+discordClient.on('shardResume', (data) => console.info('shardResume: ' + data));
+>>>>>>> 1ae8d81 (set up pm2 deploy)
 discordClient.on('shardError', (data) => console.error('shardError: ' + data));
 
 loadCommands(discordClient);
@@ -96,9 +110,8 @@ const gracefulShutdown = () => {
 		.then(() => console.info('sessionsClient quitted!'))
 		.catch(console.error);
 	try {
-		const clientId = discordClient.cluster?.id;
 		discordClient.destroy();
-		console.info('discordClient destroyed!', clientId);
+		console.info('discordClient destroyed!');
 	} catch (e) {
 		console.error(e);
 	}

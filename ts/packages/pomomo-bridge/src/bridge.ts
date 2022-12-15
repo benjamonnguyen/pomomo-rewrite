@@ -51,8 +51,12 @@ class MyBridge extends Bridge {
 				x?.shardList?.flat()?.includes(internalShard),
 			);
 			if (!targetClient) {
+<<<<<<< HEAD
 				this.health--;
 				logger.logger.error(
+=======
+				logger.error(
+>>>>>>> 1ae8d81 (set up pm2 deploy)
 					'bridge.sendCommands() - no client found for internalShard',
 					internalShard,
 					'- unsent commandMessage:',
@@ -92,4 +96,12 @@ const bridge = new MyBridge({
 	token: config.get('bot.token'),
 });
 
+<<<<<<< HEAD
+=======
+bridge.on('debug', (log) => logger.info(log));
+bridge.on('clientMessage', (msg, client) =>
+	logger.debug(`Received msg from client ${client}: ${msg}`),
+);
+
+>>>>>>> 1ae8d81 (set up pm2 deploy)
 export default bridge;

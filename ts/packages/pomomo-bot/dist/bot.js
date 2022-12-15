@@ -72,9 +72,8 @@ const gracefulShutdown = () => {
         .then(() => console.info('sessionsClient quitted!'))
         .catch(console.error);
     try {
-        const clientId = discordClient.cluster?.id;
         discordClient.destroy();
-        console.info('discordClient destroyed!', clientId);
+        console.info('discordClient destroyed!');
     }
     catch (e) {
         console.error(e);
