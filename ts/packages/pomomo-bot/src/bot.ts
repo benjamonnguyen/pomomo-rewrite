@@ -84,8 +84,6 @@ discordClient.on('error', (data) =>
 );
 discordClient.on('warn', (data) => console.warn('discordClient warn: ' + data));
 discordClient.on('cacheSweep', (data) => console.info('cacheSweep: ' + data));
-<<<<<<< HEAD
-=======
 discordClient.once('ready', (client) => {
 	console.info(
 		'discordClient ready: ' + JSON.stringify(client.options, null, 2),
@@ -97,7 +95,6 @@ discordClient.on('shardReconnecting', (data) =>
 	console.info('shardReconnecting: ' + data),
 );
 discordClient.on('shardResume', (data) => console.info('shardResume: ' + data));
->>>>>>> 1ae8d81 (set up pm2 deploy)
 discordClient.on('shardError', (data) => console.error('shardError: ' + data));
 
 loadCommands(discordClient);
