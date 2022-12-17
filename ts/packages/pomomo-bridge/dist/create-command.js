@@ -1,9 +1,9 @@
-import logger from 'pomomo-common/src/logger';
+import { logger } from 'pomomo-common/src/logger';
 import { CommandMessage, ECommand } from 'pomomo-common/src/command';
 export function createUpdateTimerCmd(guildId, channelId) {
     for (const arg of arguments) {
         if (!arg) {
-            logger.error('command.createUpdateTimerCmd() ~ missing', arg);
+            logger.logger.error('command.createUpdateTimerCmd() ~ missing', arg);
             return;
         }
     }
@@ -12,7 +12,7 @@ export function createUpdateTimerCmd(guildId, channelId) {
 export function createGoNextStateCmd(guildId, channelId) {
     for (const arg of arguments) {
         if (!arg) {
-            logger.error('command.createGoNextStateCmd() ~ missing', arg);
+            logger.logger.error('command.createGoNextStateCmd() ~ missing', arg);
             return;
         }
     }
@@ -21,7 +21,7 @@ export function createGoNextStateCmd(guildId, channelId) {
 export function createCheckIdleCmd(guildId, channelId) {
     for (const arg of arguments) {
         if (!arg) {
-            logger.error('command.createCheckIdleCmd() ~ missing', arg);
+            logger.logger.error('command.createCheckIdleCmd() ~ missing', arg);
             return;
         }
     }

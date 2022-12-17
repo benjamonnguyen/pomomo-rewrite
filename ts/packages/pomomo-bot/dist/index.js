@@ -4,6 +4,7 @@ const { Client } = pkg;
 import Cluster from 'discord-hybrid-sharding';
 import path from 'node:path';
 import { fileURLToPath } from 'url';
+import { bridgeHealthCheck } from './health-check';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Client setup
 const client = new Client({
@@ -15,13 +16,23 @@ const client = new Client({
 });
 client.on('debug', console.debug);
 client.on('error', (e) => console.error('clusterClient error:', e));
-client.connect();
 // Manager setup
 const botPath = path.join(__dirname, 'bot.js');
 const manager = new Cluster.Manager(botPath, {
     execArgv: ['--experimental-modules', '--es-module-specifier-resolution=node'],
 });
 manager.on('debug', console.debug);
+client.listen(manager);
+const gracefulShutdown = async () => {
+    console.info('Starting graceful shutdown...');
+    await client.close();
+    console.info('clusterClient closed!');
+    setTimeout(() => {
+        console.info('Shutting down');
+        process.exit();
+    }, 2000);
+};
+client.connect();
 client
     .requestShardData()
     .then((data) => {
@@ -34,16 +45,17 @@ client
     manager.spawn();
 })
     .catch(console.error);
-client.listen(manager);
-const gracefulShutdown = async () => {
-    console.info('Starting graceful shutdown...');
-    await client.close();
-    console.info('clusterClient closed!');
-    setTimeout(() => {
-        console.info('Shutting down');
-        process.exit();
-    }, 2000);
-};
+// client.on('bridgeMessage', (message) => {
+// 	if (!message._sCustom) return;
+// 	console.log('bridgeMessage', message);
+// });
+// client.on('bridgeRequest', (message) => {
+// 	if (!message._sCustom && !message._sRequest) return;
+// 	console.log('bridgeRequest', message);
+// 	message.reply({ data: 'Hello World' });
+// });
+bridgeHealthCheck.start();
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
+export { client, gracefulShutdown };
 //# sourceMappingURL=index.js.map

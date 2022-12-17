@@ -1,25 +1,23 @@
 import 'reflect-metadata';
-import logger from 'pomomo-common/src/logger';
+import { logger } from 'pomomo-common/src/logger';
 import bridge from './bridge';
 import sessionRepo from './db/session-repo';
-import { job } from './scheduler';
+import { sessionJob } from './scheduler';
 
-bridge
-	.start()
-	.then((b) => logger.info(`bridge started: ${JSON.stringify(b, null, 2)}`));
+bridge.start();
 
-job.start();
-logger.info('started scheduler job!');
+sessionJob.start();
+logger.logger.info('started scheduler job!');
 
 const gracefulShutdown = () => {
-	logger.info('Starting graceful shutdown...');
-	const a = bridge.close().then(() => logger.info('bridge closed!'));
+	logger.logger.info('Starting graceful shutdown...');
+	const a = bridge.close().then(() => logger.logger.info('bridge closed!'));
 	const b = sessionRepo.client
 		.quit()
-		.then(() => logger.info('sessionClient quitted!'));
+		.then(() => logger.logger.info('sessionClient quitted!'));
 	Promise.allSettled([a, b]);
 	setTimeout(() => {
-		logger.info('gracefulShutdown timed out!');
+		logger.logger.info('gracefulShutdown timed out!');
 		process.exit();
 	}, 5000);
 };
@@ -27,4 +25,4 @@ const gracefulShutdown = () => {
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 
-export {};
+export { gracefulShutdown };

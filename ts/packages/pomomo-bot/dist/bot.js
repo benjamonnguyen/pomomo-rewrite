@@ -62,13 +62,6 @@ else {
 discordClient.on('error', (data) => console.error('discordClient error: ' + data));
 discordClient.on('warn', (data) => console.warn('discordClient warn: ' + data));
 discordClient.on('cacheSweep', (data) => console.info('cacheSweep: ' + data));
-discordClient.once('ready', (client) => {
-    console.info('discordClient ready: ' + JSON.stringify(client.options, null, 2));
-});
-discordClient.on('shardReady', (data) => console.info('shardReady: ' + data));
-discordClient.on('shardDisconnect', () => console.info('shardDisconnected'));
-discordClient.on('shardReconnecting', (data) => console.info('shardReconnecting: ' + data));
-discordClient.on('shardResume', (data) => console.info('shardResume: ' + data));
 discordClient.on('shardError', (data) => console.error('shardError: ' + data));
 loadCommands(discordClient);
 loadButtons(discordClient);

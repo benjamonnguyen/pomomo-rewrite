@@ -29,6 +29,9 @@
 		"job": {
 			"session": {
 				"cronTime": "*/1 * * * *"
+			},
+			"healthCheck": {
+				"cronTime": "*/1 * * * *"
 			}
 		},
 		"batchSize": 20,
