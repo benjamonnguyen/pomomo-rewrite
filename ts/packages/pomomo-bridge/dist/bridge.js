@@ -23,6 +23,9 @@ class MyBridge extends Bridge {
         const promises = [];
         this.clients.forEach((client) => {
             const cmds = clientIdToCommands.get(client.id);
+            if (cmds.length == 0) {
+                return;
+            }
             console.debug(`bridge.sendCommands() ~ sending commands to clientId ${client.id}: ${cmds}`);
             const payload = { guildId: cmds[0].targetGuildId, commands: cmds };
             promises.push(this.requestToGuild(payload));

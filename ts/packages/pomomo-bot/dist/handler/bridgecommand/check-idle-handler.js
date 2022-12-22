@@ -15,7 +15,7 @@ async function handle(command) {
             content: 'Are you still there? 👀',
         });
         await msg.react('👍');
-        playIdleResource([
+        await playIdleResource([
             joinVoiceChannel({
                 channelId: channel.id,
                 guildId: guild.id,
@@ -40,7 +40,7 @@ async function handle(command) {
             console.error('check-idle.handle() - killing idle session');
             sessionRepo
                 .get(command.targetGuildId, command.payload.channelId)
-                .then((session) => end(session, guild.members).catch(console.error))
+                .then((session) => end(session).catch(console.error))
                 .catch(console.error);
             msg.edit({ content: 'Idle session ended' }).catch(console.error);
         });

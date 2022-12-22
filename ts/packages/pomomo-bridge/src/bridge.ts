@@ -36,6 +36,9 @@ class MyBridge extends Bridge {
 		const promises: Promise<any>[] = [];
 		this.clients.forEach((client) => {
 			const cmds = clientIdToCommands.get(client.id);
+			if (cmds.length == 0) {
+				return;
+			}
 			console.debug(
 				`bridge.sendCommands() ~ sending commands to clientId ${client.id}: ${cmds}`,
 			);
