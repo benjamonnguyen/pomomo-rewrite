@@ -1,1 +1,0 @@
-pm2 start bridge.json && sleep 10 && pm2 start bot.json

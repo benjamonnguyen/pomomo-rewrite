@@ -6,5 +6,8 @@
   ],
   "devDependencies": {
     "lerna": "^5.6.1"
+  },
+  "dependencies": {
+    "pm2": "^5.2.2"
   }
 }

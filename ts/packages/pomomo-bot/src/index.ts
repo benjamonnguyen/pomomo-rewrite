@@ -27,16 +27,10 @@ const manager = new Cluster.Manager(botPath, {
 manager.on('debug', console.debug);
 client.listen(manager);
 
-const gracefulShutdown = async () => {
+const gracefulShutdown = () => {
 	console.info('Starting graceful shutdown...');
-
-	await client.close();
+	client.close();
 	console.info('clusterClient closed!');
-
-	setTimeout(() => {
-		console.info('Shutting down');
-		process.exit();
-	}, 2000);
 };
 
 client.connect();
@@ -69,4 +63,4 @@ bridgeHealthCheck.start();
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
 
-export { client, gracefulShutdown };
+export { client };

@@ -8,7 +8,6 @@ import { createUpdateTimerCmd, createGoNextStateCmd, createCheckIdleCmd, } from 
 import bridge from './bridge';
 import { DateTime } from 'luxon';
 import { calcTimeRemaining } from 'pomomo-common/src/util/timer-util';
-import { gracefulShutdown } from './index';
 const BATCH_SIZE = config.get('scheduler.batchSize');
 const LINGER_MS = config.get('scheduler.lingerMs');
 const RESOLUTION_M = config.get('session.resolutionM');
@@ -77,7 +76,12 @@ export const sessionJob = new CronJob(config.get('scheduler.job.session.cronTime
 export const healthCheckJob = new CronJob(config.get('scheduler.job.healthCheck.cronTime'), async () => {
     if (bridge.health <= 0) {
         logger.logger.fatal('healthCheck: bridge.health <= 0');
-        gracefulShutdown();
+        process.send({
+            type: 'process:msg',
+            data: {
+                restart: true,
+            },
+        });
     }
 });
 //# sourceMappingURL=scheduler.js.map

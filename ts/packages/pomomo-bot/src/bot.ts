@@ -84,17 +84,15 @@ discordClient.on('error', (data) =>
 );
 discordClient.on('warn', (data) => console.warn('discordClient warn: ' + data));
 discordClient.on('cacheSweep', (data) => console.info('cacheSweep: ' + data));
-discordClient.once('ready', (client) => {
-	console.info(
-		'discordClient ready: ' + JSON.stringify(client.options, null, 2),
-	);
+discordClient.once('ready', (_) => {
+	console.info('discordClient ready');
 });
-discordClient.on('shardReady', (data) => console.info('shardReady: ' + data));
-discordClient.on('shardDisconnect', () => console.info('shardDisconnected'));
-discordClient.on('shardReconnecting', (data) =>
-	console.info('shardReconnecting: ' + data),
-);
-discordClient.on('shardResume', (data) => console.info('shardResume: ' + data));
+// discordClient.on('shardReady', (data) => console.info('shardReady: ' + data));
+// discordClient.on('shardDisconnect', () => console.info('shardDisconnected'));
+// discordClient.on('shardReconnecting', (data) =>
+// 	console.info('shardReconnecting: ' + data),
+// );
+// discordClient.on('shardResume', (data) => console.info('shardResume: ' + data));
 discordClient.on('shardError', (data) => console.error('shardError: ' + data));
 
 loadCommands(discordClient);
@@ -112,10 +110,6 @@ const gracefulShutdown = () => {
 	} catch (e) {
 		console.error(e);
 	}
-	setTimeout(() => {
-		console.info('Shutting down');
-		process.exit();
-	}, 2000);
 };
 
 process.on('SIGTERM', gracefulShutdown);

@@ -5,12 +5,19 @@ import { CommandMessage } from 'pomomo-common/src/command';
 import { shardIdForGuildId } from 'discord-hybrid-sharding';
 
 class MyBridge extends Bridge {
-	// consider system to be unhealthy once health drops to 0
-	health = 3;
-
 	constructor(options: BridgeOptions) {
 		super(options);
-		this.on('debug', (log) => logger.logger.info(log));
+		this.on('debug', (log) => {
+			if (log.includes('SHARDLIST_DATA_UPDATE')) {
+				process.send({
+					type: 'process:msg',
+					data: {
+						bridgeReady: true,
+					},
+				});
+			}
+			logger.logger.info(log);
+		});
 		this.on('clientMessage', (msg, client) => {
 			if (!msg._sCustom) return;
 			logger.logger.debug(`Received msg from client ${client}: ${msg}`);
@@ -51,7 +58,6 @@ class MyBridge extends Bridge {
 				x?.shardList?.flat()?.includes(internalShard),
 			);
 			if (!targetClient) {
-				this.health--;
 				logger.logger.error(
 					'bridge.sendCommands() - no client found for internalShard',
 					internalShard,
