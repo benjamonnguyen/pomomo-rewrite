@@ -49,7 +49,7 @@ class MyBridge extends Bridge {
             if (cmds.length == 0) {
                 return;
             }
-            logger.logger.debug(`bridge.sendCommands() ~ sending commands to clientId ${client.id}: ${cmds}`);
+            logger.logger.info(`bridge.sendCommands() ~ sending ${cmds.length} commands to clientId ${client.id}`);
             const payload = { guildId: cmds[0].targetGuildId, commands: cmds };
             promises.push(this.requestToGuild(payload));
         });
