@@ -31,4 +31,5 @@ Visit [pomomo.us](https://pomomo.us) or join the [support server](https://discor
 
 1. configure config/\*.json files, execute `npm i`
 2. if slash commands have been added or removed, execute `npm run register-commands` from "./ts/pomomo-bot"
-3. execute  `pm2 start app.js` from "./ts"
+3. execute `pm2 start bridge.json` from "./deploy" to start Bridge
+4. execute `pm2 start bot.json` from "./deploy" to start Bot Client

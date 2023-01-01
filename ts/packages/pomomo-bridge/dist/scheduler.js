@@ -73,15 +73,18 @@ export const sessionJob = new CronJob(config.get('scheduler.job.session.cronTime
 /**
  * system health check
  */
-export const healthCheckJob = new CronJob(config.get('scheduler.job.healthCheck.cronTime'), async () => {
-    if (bridge.health <= 0) {
-        logger.logger.fatal('healthCheck: bridge.health <= 0');
-        process.send({
-            type: 'process:msg',
-            data: {
-                restart: true,
-            },
-        });
-    }
-});
+// export const healthCheckJob = new CronJob(
+// 	config.get('scheduler.job.healthCheck.cronTime'),
+// 	async () => {
+// 		if (bridge.health <= 0) {
+// 			logger.logger.fatal('healthCheck: bridge.health <= 0');
+// 			process.send({
+// 				type: 'process:msg',
+// 				data: {
+// 					restart: true,
+// 				},
+// 			});
+// 		}
+// 	},
+// );
 //# sourceMappingURL=scheduler.js.map

@@ -6,17 +6,10 @@ class MyBridge extends Bridge {
     constructor(options) {
         super(options);
         this.on('debug', (log) => {
-            if (log.includes('SHARDLIST_DATA_UPDATE')) {
-                process.send({
-                    type: 'process:msg',
-                    data: {
-                        bridgeReady: true,
-                    },
-                });
-            }
             logger.logger.info(log);
         });
         this.on('clientMessage', (msg, client) => {
+            // TODO centralized logging [Client0] ...
             if (!msg._sCustom)
                 return;
             logger.logger.debug(`Received msg from client ${client}: ${msg}`);
@@ -25,15 +18,6 @@ class MyBridge extends Bridge {
                 logger.log(logMsg.logLvl, logMsg.log);
             }
         });
-        // this.on('connect', () => {
-        // 	const message = {
-        // 		totalShards: this.totalShards,
-        // 		shardClusterList: (this as any).shardClusterList,
-        // 		_type: 5,
-        // 	};
-        // 	this.clients.forEach((client, _) => client.send(message), { cm: true });
-        // 	logger.logger.info(`[SHARDLIST_DATA_UPDATE][${this.clients.size}]`);
-        // });
         this.on('clientRequest', (message, _) => {
             if (!message._sCustom && !message._sRequest)
                 return;
@@ -52,7 +36,7 @@ class MyBridge extends Bridge {
             const targetClient = Array.from(this.clients.values()).find((x) => x?.shardList?.flat()?.includes(internalShard));
             if (!targetClient) {
                 logger.logger.error('bridge.sendCommands() - no client found for internalShard', internalShard, '- unsent commandMessage:', msg);
-                continue;
+                process.kill(0, 'SIGINT');
             }
             if (!msg.options)
                 msg.options = {};

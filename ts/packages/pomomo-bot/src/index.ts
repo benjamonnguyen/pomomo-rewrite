@@ -10,14 +10,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Client setup
 const client = new Client({
-	agent: config.get('app.name'),
+	agent: 'bot',
 	host: config.get('bridge.host'),
 	port: config.get('bridge.port'),
 	authToken: config.get('bridge.authToken'),
 	rollingRestarts: true,
 });
 client.on('debug', console.debug);
-client.on('error', (e) => console.error('clusterClient error:', e));
+// client.on('error', (e) => console.error('clusterClient error:', e));
 
 // Manager setup
 const botPath = path.join(__dirname, 'bot.js');
@@ -29,8 +29,8 @@ client.listen(manager);
 
 const gracefulShutdown = () => {
 	console.info('Starting graceful shutdown...');
-	client.close();
-	console.info('clusterClient closed!');
+	client.destroy();
+	setTimeout(() => process.exit(), 2000);
 };
 
 client.connect();

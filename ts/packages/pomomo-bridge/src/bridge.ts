@@ -8,17 +8,10 @@ class MyBridge extends Bridge {
 	constructor(options: BridgeOptions) {
 		super(options);
 		this.on('debug', (log) => {
-			if (log.includes('SHARDLIST_DATA_UPDATE')) {
-				process.send({
-					type: 'process:msg',
-					data: {
-						bridgeReady: true,
-					},
-				});
-			}
 			logger.logger.info(log);
 		});
 		this.on('clientMessage', (msg, client) => {
+			// TODO centralized logging [Client0] ...
 			if (!msg._sCustom) return;
 			logger.logger.debug(`Received msg from client ${client}: ${msg}`);
 			if (Object.hasOwn(msg, 'log')) {
@@ -26,15 +19,6 @@ class MyBridge extends Bridge {
 				logger.log(logMsg.logLvl, logMsg.log);
 			}
 		});
-		// this.on('connect', () => {
-		// 	const message = {
-		// 		totalShards: this.totalShards,
-		// 		shardClusterList: (this as any).shardClusterList,
-		// 		_type: 5,
-		// 	};
-		// 	this.clients.forEach((client, _) => client.send(message), { cm: true });
-		// 	logger.logger.info(`[SHARDLIST_DATA_UPDATE][${this.clients.size}]`);
-		// });
 		this.on('clientRequest', (message, _) => {
 			if (!message._sCustom && !message._sRequest) return;
 			if (Object.hasOwn(message, 'bridgeHealthCheck')) {
@@ -64,7 +48,7 @@ class MyBridge extends Bridge {
 					'- unsent commandMessage:',
 					msg,
 				);
-				continue;
+				process.kill(0, 'SIGINT');
 			}
 			if (!msg.options) msg.options = {};
 			msg.options.shard = internalShard;
