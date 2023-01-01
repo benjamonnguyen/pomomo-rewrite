@@ -1,14 +1,8 @@
 import sessionRepo from '../../db/session-repo';
-import {
-	ButtonBuilder,
-	ButtonInteraction,
-	ButtonStyle,
-	GuildMemberManager,
-} from 'discord.js';
+import { ButtonBuilder, ButtonInteraction, ButtonStyle } from 'discord.js';
 import { editEnd } from '../../message/session-message';
 import { Session } from 'pomomo-common/src/model/session';
 import { getVoiceConnection } from '@discordjs/voice';
-import { endAutoshush } from '../../autoshush';
 
 export const BUTTON_ID = 'endBtn';
 
@@ -25,7 +19,7 @@ export const execute = async (interaction: ButtonInteraction) => {
 			interaction.guildId,
 			interaction.channelId,
 		);
-		await end(session, interaction.guild.members);
+		await end(session);
 	} catch (e) {
 		console.error('end.execute() ~', e);
 		interaction
@@ -36,14 +30,11 @@ export const execute = async (interaction: ButtonInteraction) => {
 	}
 };
 
-export async function end(
-	session: Session,
-	memberManager?: GuildMemberManager,
-): Promise<void> {
+export async function end(session: Session): Promise<void> {
 	const promises = [];
-	if (memberManager) {
-		promises.push(endAutoshush(session, memberManager));
-	}
+	// if (memberManager) {
+	// 	promises.push(endAutoshush(session, memberManager));
+	// }
 	promises.push([editEnd(session), sessionRepo.delete(session.id)]);
 	const res = await Promise.allSettled(promises);
 	res.forEach((r) => {

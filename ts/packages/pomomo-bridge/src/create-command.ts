@@ -1,3 +1,4 @@
+import { logger } from 'pomomo-common/src/logger';
 import { CommandMessage, ECommand, Payload } from 'pomomo-common/src/command';
 
 export function createUpdateTimerCmd(
@@ -6,7 +7,7 @@ export function createUpdateTimerCmd(
 ): CommandMessage {
 	for (const arg of arguments) {
 		if (!arg) {
-			console.error('command.createUpdateTimerCmd() ~ missing', arg);
+			logger.logger.error('command.createUpdateTimerCmd() ~ missing', arg);
 			return;
 		}
 	}
@@ -23,7 +24,7 @@ export function createGoNextStateCmd(
 ): CommandMessage {
 	for (const arg of arguments) {
 		if (!arg) {
-			console.error('command.createGoNextStateCmd() ~ missing', arg);
+			logger.logger.error('command.createGoNextStateCmd() ~ missing', arg);
 			return;
 		}
 	}
@@ -40,7 +41,7 @@ export function createCheckIdleCmd(
 ): CommandMessage {
 	for (const arg of arguments) {
 		if (!arg) {
-			console.error('command.createCheckIdleCmd() ~ missing', arg);
+			logger.logger.error('command.createCheckIdleCmd() ~ missing', arg);
 			return;
 		}
 	}

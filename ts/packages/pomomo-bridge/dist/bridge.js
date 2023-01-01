@@ -1,9 +1,32 @@
 import config from 'config';
+import { logger } from 'pomomo-common/src/logger';
 import { Bridge } from 'discord-cross-hosting';
 import { shardIdForGuildId } from 'discord-hybrid-sharding';
 class MyBridge extends Bridge {
     constructor(options) {
         super(options);
+        this.on('debug', (log) => {
+            logger.logger.info(log);
+        });
+        this.on('clientMessage', (msg, client) => {
+            // TODO centralized logging [Client0] ...
+            if (!msg._sCustom)
+                return;
+            logger.logger.debug(`Received msg from client ${client}: ${msg}`);
+            if (Object.hasOwn(msg, 'log')) {
+                const logMsg = msg;
+                logger.log(logMsg.logLvl, logMsg.log);
+            }
+        });
+        this.on('clientRequest', (message, _) => {
+            if (!message._sCustom && !message._sRequest)
+                return;
+            if (Object.hasOwn(message, 'bridgeHealthCheck')) {
+                message
+                    .reply({})
+                    .catch((e) => logger.logger.error('checkBridgeUp reply error: ' + e));
+            }
+        });
     }
     async sendCommands(commands) {
         const clientIdToCommands = new Map();
@@ -12,8 +35,8 @@ class MyBridge extends Bridge {
             const internalShard = shardIdForGuildId(msg.targetGuildId, this.totalShards);
             const targetClient = Array.from(this.clients.values()).find((x) => x?.shardList?.flat()?.includes(internalShard));
             if (!targetClient) {
-                console.error('bridge.sendCommands() ~ no client found for internalShard', internalShard);
-                continue;
+                logger.logger.error('bridge.sendCommands() - no client found for internalShard', internalShard, '- unsent commandMessage:', msg);
+                process.kill(0, 'SIGINT');
             }
             if (!msg.options)
                 msg.options = {};
@@ -26,7 +49,7 @@ class MyBridge extends Bridge {
             if (cmds.length == 0) {
                 return;
             }
-            console.debug(`bridge.sendCommands() ~ sending commands to clientId ${client.id}: ${cmds}`);
+            logger.logger.debug(`bridge.sendCommands() ~ sending commands to clientId ${client.id}: ${cmds}`);
             const payload = { guildId: cmds[0].targetGuildId, commands: cmds };
             promises.push(this.requestToGuild(payload));
         });
@@ -41,7 +64,5 @@ const bridge = new MyBridge({
     shardsPerCluster: config.get('bridge.shardsPerCluster'),
     token: config.get('bot.token'),
 });
-bridge.on('debug', console.debug);
-bridge.on('clientMessage', console.debug);
 export default bridge;
 //# sourceMappingURL=bridge.js.map

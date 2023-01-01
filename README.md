@@ -29,7 +29,7 @@ Visit [pomomo.us](https://pomomo.us) or join the [support server](https://discor
 
 ## Deployment
 
-1. configure config/\*.json files, `npm i`, and run vscode task `tsc: build - all`
-2. `npm run register-commands` in "./ts/pomomo-bot"
-3. `npm run prod` in "./ts/pomomo-bridge"
-4. `npm run prod` in "./ts/pomomo-bot"
+1. configure config/\*.json files, execute `npm i`
+2. if slash commands have been added or removed, execute `npm run register-commands` from "./ts/pomomo-bot"
+3. execute `pm2 start bridge.json` from "./deploy" to start Bridge
+4. execute `pm2 start bot.json` from "./deploy" to start Bot Client

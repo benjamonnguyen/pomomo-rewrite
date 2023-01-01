@@ -13,7 +13,8 @@
 		"./src/model/settings/session-settings": "./dist/model/settings/session-settings.js",
 		"./src/util/timer-util": "./dist/util/timer-util.js",
 		"./src/discord/error": "./dist/discord/error.js",
-		"./src/model/focus-member": "./dist/model/focus-member.js"
+		"./src/model/focus-member": "./dist/model/focus-member.js",
+		"./src/logger": "./dist/logger/index.js"
 	},
 	"scripts": {},
 	"author": "benjinguyen",
@@ -21,6 +22,8 @@
 	"dependencies": {
 		"class-transformer": "^0.5.1",
 		"config": "^3.3.8",
+		"pino": "^8.7.0",
+		"pino-pretty": "^9.1.1",
 		"redis": "^4.3.1",
 		"redis-node": "^0.4.0"
 	},

@@ -1,7 +1,6 @@
 import sessionRepo from '../../db/session-repo';
-import { ButtonBuilder, ButtonStyle, } from 'discord.js';
+import { ButtonBuilder, ButtonStyle } from 'discord.js';
 import { update } from '../../message/session-message';
-import { handleAutoshush } from '../../autoshush';
 export const BUTTON_ID = 'skipBtn';
 export const skipBtn = () => {
     return new ButtonBuilder()
@@ -13,7 +12,7 @@ export const execute = async (interaction) => {
     try {
         await interaction.deferUpdate();
         const session = await sessionRepo.get(interaction.guildId, interaction.channelId);
-        await skip(session, interaction.guild.members);
+        await skip(session);
     }
     catch (e) {
         console.error('skip.execute() ~', e);
@@ -24,12 +23,12 @@ export const execute = async (interaction) => {
             .catch(console.error);
     }
 };
-export async function skip(session, memberManager) {
+export async function skip(session) {
     session.goNextState(true);
     const res = await Promise.allSettled([
         sessionRepo.set(session),
         update(session),
-        handleAutoshush(session, memberManager),
+        // handleAutoshush(session, memberManager),
     ]);
     res.forEach((r) => {
         if (r.status === 'rejected') {

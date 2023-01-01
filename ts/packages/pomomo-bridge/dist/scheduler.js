@@ -1,4 +1,5 @@
 import config from 'config';
+import { logger } from 'pomomo-common/src/logger';
 import { CronJob } from 'cron';
 import sessionRepo from './db/session-repo';
 import { plainToInstance } from 'class-transformer';
@@ -14,21 +15,20 @@ const RESOLUTION_M = config.get('session.resolutionM');
  * scans redis session database and generates batches of commands
  * to send to discord client
  */
-export const job = new CronJob(config.get('scheduler.job.session.cronTime'), async () => {
+export const sessionJob = new CronJob(config.get('scheduler.job.session.cronTime'), async () => {
     let lastBatch = DateTime.now();
     let commands = [];
     for await (const key of sessionRepo.client.scanIterator({
         MATCH: 'session#*',
     })) {
-        // console.log('cron job ~ processing', key);
         const session = plainToInstance(Session, await sessionRepo.client.json.get(key));
         if (session.idleCheck) {
             if ((new Date().getTime() - session.idleCheck.getTime()) / 3600000 >=
                 24) {
                 sessionRepo
                     .delete(session.id)
-                    .then(() => console.warn('idleCheck timed out -', session.id))
-                    .catch(console.error);
+                    .then(() => logger.logger.debug('idleCheck timed out -', session.id))
+                    .catch(logger.logger.error);
             }
         }
         else if (session.isIdle()) {
@@ -61,13 +61,30 @@ export const job = new CronJob(config.get('scheduler.job.session.cronTime'), asy
         }
         if (commands.length &&
             (commands.length >= BATCH_SIZE || lastBatch.diffNow() >= LINGER_MS)) {
-            bridge.sendCommands([...commands]).catch(console.error);
+            bridge.sendCommands([...commands]).catch(logger.logger.error);
             commands = [];
             lastBatch = DateTime.now();
         }
     }
     if (commands.length) {
-        bridge.sendCommands(commands).catch(console.error);
+        bridge.sendCommands(commands).catch(logger.logger.error);
     }
 });
+/**
+ * system health check
+ */
+// export const healthCheckJob = new CronJob(
+// 	config.get('scheduler.job.healthCheck.cronTime'),
+// 	async () => {
+// 		if (bridge.health <= 0) {
+// 			logger.logger.fatal('healthCheck: bridge.health <= 0');
+// 			process.send({
+// 				type: 'process:msg',
+// 				data: {
+// 					restart: true,
+// 				},
+// 			});
+// 		}
+// 	},
+// );
 //# sourceMappingURL=scheduler.js.map

@@ -13,15 +13,41 @@ import { once, EventEmitter } from 'node:events';
 import path from 'node:path';
 import { createReadStream } from 'node:fs';
 import { ESessionState } from 'pomomo-common/src/model/session';
+import { fileURLToPath } from 'url';
 
-const START_SOUND_PATH = path.join('resources', 'sound', 'start.ogg');
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const START_SOUND_PATH = path.join(
+	__dirname,
+	'..',
+	'..',
+	'resources',
+	'sound',
+	'start.ogg',
+);
 const SHORT_BREAK_SOUND_PATH = path.join(
+	__dirname,
+	'..',
+	'..',
 	'resources',
 	'sound',
 	'short-break.ogg',
 );
-const LONG_BREAK_SOUND_PATH = path.join('resources', 'sound', 'long-break.ogg');
-const IDLE_SOUND_PATH = path.join('resources', 'sound', 'idle.ogg');
+const LONG_BREAK_SOUND_PATH = path.join(
+	__dirname,
+	'..',
+	'..',
+	'resources',
+	'sound',
+	'long-break.ogg',
+);
+const IDLE_SOUND_PATH = path.join(
+	__dirname,
+	'..',
+	'..',
+	'resources',
+	'sound',
+	'idle.ogg',
+);
 
 const minPoolSize: number = config.get('voice.audioPlayer.pool.minSize');
 const maxPoolSize: number = config.get('voice.audioPlayer.pool.maxSize');
