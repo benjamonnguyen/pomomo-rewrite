@@ -10,7 +10,7 @@ Customize the settings to what works best for you, and Pomomo will play an alert
 
 [Click here](https://discord.com/oauth2/authorize?client_id=821952460909445130&permissions=15739904&scope=bot%20applications.commands) to invite Pomomo to your Discord server.
 
-To start a pomodoro session, join a voice channel and use slash command `/start`. It's that simple!
+To start a pomodoro session, join a voice channel and use slash command `/start`. A session message will appear in the [text chat in voice channel](https://support.discord.com/hc/en-us/articles/4412085582359-Text-Channels-Text-Chat-In-Voice-Channels#h_01FMJT3SP072ZFJCZWR0EW6CJ1). It's that simple!
 
 Visit [pomomo.us](https://pomomo.us) or join the [support server](https://discord.gg/Aghy78wcFr) for more info!
 
