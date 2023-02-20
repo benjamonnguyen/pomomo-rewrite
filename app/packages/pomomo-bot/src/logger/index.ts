@@ -8,3 +8,15 @@ export async function logToBridge(lvl: ELogLevel, log: string) {
 		console.error('logToBridge() error: ' + e);
 	}
 }
+
+export function handleError(e: Error) {
+	console.error(e);
+}
+
+export function handleRejectedSettledResults(results: PromiseSettledResult<any>[]) {
+	results.forEach(r => {
+		if (r.status === 'rejected') {
+			console.error(r.reason);
+		}
+	});
+}

@@ -1,11 +1,12 @@
 import { RedisClientType } from 'redis';
 import { Session } from '../model/session/Session';
+import { Guild } from 'discord.js';
 export declare class SessionRepository {
     client: RedisClientType;
     constructor(url: string);
     get(guildId: string, channelId: string): Promise<Session>;
     set(session: Session): Promise<"OK">;
-    insert(session: Session): Promise<void>;
+    insert(session: Session, guild: Guild): Promise<void>;
     delete(sessionId: string): Promise<void>;
     getSessionCount(guildId: string): Promise<number>;
     incSessionCount(guildId: string, by: number): Promise<number>;

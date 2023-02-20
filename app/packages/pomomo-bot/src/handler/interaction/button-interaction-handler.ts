@@ -1,5 +1,5 @@
-import { ButtonInteraction } from "discord.js";
-import discordClient from "../../bot";
+import { ButtonInteraction } from 'discord.js';
+import discordClient from '../../bot';
 
 const handle = async (btnInteraction: ButtonInteraction) => {
 	const execute = discordClient.buttons.get(btnInteraction.customId);

@@ -14,6 +14,7 @@ import path from 'node:path';
 import { createReadStream } from 'node:fs';
 import { ESessionState } from 'pomomo-common/src/model/session';
 import { fileURLToPath } from 'url';
+import discordClient from '../bot';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const START_SOUND_PATH = path.join(
@@ -86,9 +87,13 @@ class AudioPlayerManager extends EventEmitter {
 			killCount++;
 			this.totalSize--;
 		}
-		console.info(
-			`audioPlayerManager.killTimedOutPlayers() ~ killCount ${killCount} ~ totalSize ${this.totalSize}`,
-		);
+		if (killCount) {
+			console.info(
+				`audioPlayerManager clusterId ${
+					discordClient.cluster.id || -1
+				} ~ killCount ${killCount} ~ totalSize ${this.totalSize}`,
+			);
+		}
 	}
 
 	private pollKillTimedOutPlayers() {
@@ -126,7 +131,13 @@ class AudioPlayerManager extends EventEmitter {
 			if (this.totalSize < maxPoolSize) {
 				this.addPlayer();
 			} else {
+				const now = new Date();
 				await once(this, 'available');
+				console.info(
+					`waited ${
+						(new Date().getTime() - now.getTime()) / 1000
+					} seconds for availablePlayer`,
+				);
 			}
 		}
 
@@ -135,9 +146,10 @@ class AudioPlayerManager extends EventEmitter {
 
 	public async play(resource: AudioResource, connections: VoiceConnection[]) {
 		if (!connections.length || !resource) {
+			console.warn('audio-player.play() bad args');
 			return;
 		}
-		const MAX_WAIT_MS = 5000;
+		const MAX_WAIT_MS = 10000;
 		const player = await this.getAvailablePlayer();
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const connectionsOnceReady: Promise<any[]>[] = [];
@@ -148,10 +160,25 @@ class AudioPlayerManager extends EventEmitter {
 			}
 		});
 
+		let timeout: NodeJS.Timeout;
 		return Promise.race([
-			new Promise((resolve) => setTimeout(resolve, MAX_WAIT_MS)),
-			Promise.allSettled(connectionsOnceReady),
-		]).then(() => player.play(resource));
+			new Promise(
+				(resolve) =>
+					(timeout = setTimeout(() => {
+						console.error(
+							`audioPlayerManager.play() omitted ${
+								connections.length - player.playable.length
+							}/${connections.length} connections`,
+						);
+						resolve('timeout');
+					}, MAX_WAIT_MS)),
+			),
+			Promise.allSettled(connectionsOnceReady).then(() =>
+				clearTimeout(timeout),
+			),
+		]).then(() => {
+			player.play(resource);
+		});
 	}
 }
 
@@ -164,7 +191,9 @@ export function playForState(
 	if (!connections.length) {
 		return;
 	}
-	console.debug('audio-player.playForState()', state.toString());
+	console.debug(
+		`audio-player.playForState() state: ${state} - ${connections.length} connections`,
+	);
 	let resourcePath;
 	if (state === ESessionState.POMODORO) {
 		resourcePath = START_SOUND_PATH;

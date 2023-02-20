@@ -1,6 +1,7 @@
 import { createClient, RedisClientType } from 'redis';
 import { plainToInstance, instanceToPlain } from 'class-transformer';
 import { Session } from '../model/session/Session';
+import { Guild } from 'discord.js';
 
 export class SessionRepository {
 	client: RedisClientType;
@@ -27,7 +28,7 @@ export class SessionRepository {
 		return this.client.json.set(session.id, '.', instanceToPlain(session));
 	}
 
-	async insert(session: Session) {
+	async insert(session: Session, guild: Guild) {
 		if (!(session.guildId && session.channelId && session.timerMsgId)) {
 			throw new InvalidSessionError(session);
 		}
@@ -42,17 +43,25 @@ export class SessionRepository {
 			console.error('session-repo.insert()', e);
 			throw e;
 		}
+		const guildKey = buildGuildKey(session.guildId);
 		await this.client.json
 			.set(
-				buildGuildKey(session.guildId),
+				guildKey,
 				'.',
 				{
 					sessionCount: 0,
+					sessionsStarted: 0,
 				},
 				{ NX: true },
 			)
 			.catch(console.error);
-		await this.incSessionCount(session.guildId, 1);
+		await Promise.all([
+			this.incSessionCount(session.guildId, 1),
+			this.client.json.set(guildKey, '.name', guild.name),
+			// TODO increment sessionsStarted
+			this.client.json.set(guildKey, '.sessionsStarted', 0),
+			this.client.json.set(guildKey, '.lastUpdated', new Date()),
+		]);
 	}
 
 	async delete(sessionId: string) {

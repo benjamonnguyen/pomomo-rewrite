@@ -22,7 +22,7 @@ export class SessionRepository {
     async set(session) {
         return this.client.json.set(session.id, '.', instanceToPlain(session));
     }
-    async insert(session) {
+    async insert(session, guild) {
         if (!(session.guildId && session.channelId && session.timerMsgId)) {
             throw new InvalidSessionError(session);
         }
@@ -37,12 +37,20 @@ export class SessionRepository {
             console.error('session-repo.insert()', e);
             throw e;
         }
+        const guildKey = buildGuildKey(session.guildId);
         await this.client.json
-            .set(buildGuildKey(session.guildId), '.', {
+            .set(guildKey, '.', {
             sessionCount: 0,
+            sessionsStarted: 0,
         }, { NX: true })
             .catch(console.error);
-        await this.incSessionCount(session.guildId, 1);
+        await Promise.all([
+            this.incSessionCount(session.guildId, 1),
+            this.client.json.set(guildKey, '.name', guild.name),
+            // TODO increment sessionsStarted
+            this.client.json.set(guildKey, '.sessionsStarted', 0),
+            this.client.json.set(guildKey, '.lastUpdated', new Date()),
+        ]);
     }
     async delete(sessionId) {
         const guildId = (await this.client.json.get(sessionId, {

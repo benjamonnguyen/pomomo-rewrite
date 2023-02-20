@@ -19,6 +19,7 @@ import { loadCommands, loadButtons } from './loadable/loader';
 import handleBridgeCommands from './handler/bridgecommand/bridge-command-handler';
 import sessionRepo from './db/session-repo';
 import handleInteraction from './handler/interaction/interaction-handler';
+import leaveInactiveGuilds from './leave-inactive-guilds';
 
 export class MyDiscordClient extends Client {
 	commands: Map<string, (interaction: CommandInteraction) => Promise<void>>;
@@ -83,17 +84,25 @@ discordClient.on('error', (data) =>
 	console.error('discordClient error: ' + data),
 );
 discordClient.on('warn', (data) => console.warn('discordClient warn: ' + data));
-discordClient.on('cacheSweep', (data) => console.info('cacheSweep: ' + data));
-discordClient.once('ready', (_) => {
-	console.info('discordClient ready');
+// discordClient.on('debug', (data) => console.debug(data));
+// discordClient.on('cacheSweep', (data) => console.info('cacheSweep: ' + data));
+discordClient.once('ready', async (_) => {
+	console.info(
+		`clusterId ${discordClient.cluster.id} - guild count ${discordClient.guilds.cache.size}`,
+	);
+	if (process.env.LEAVE_INACTIVE_GUILDS) {
+		await leaveInactiveGuilds(discordClient.guilds.cache.values());
+	}
 });
 // discordClient.on('shardReady', (data) => console.info('shardReady: ' + data));
-// discordClient.on('shardDisconnect', () => console.info('shardDisconnected'));
+// discordClient.on('shardDisconnect', (data) =>
+// 	console.info('shardDisconnected:', data),
+// );
 // discordClient.on('shardReconnecting', (data) =>
 // 	console.info('shardReconnecting: ' + data),
 // );
 // discordClient.on('shardResume', (data) => console.info('shardResume: ' + data));
-discordClient.on('shardError', (data) => console.error('shardError: ' + data));
+// discordClient.on('shardError', (data) => console.error('shardError: ' + data));
 
 loadCommands(discordClient);
 loadButtons(discordClient);
