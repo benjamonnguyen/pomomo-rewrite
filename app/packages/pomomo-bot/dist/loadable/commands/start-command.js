@@ -108,6 +108,6 @@ export const execute = async (interaction) => {
         guildId: session.guildId,
         adapterCreator: interaction.guild.voiceAdapterCreator,
     });
-    playForState(session.state, [conn]).catch(console.error);
+    playForState(session.state, conn).catch(console.error);
 };
 //# sourceMappingURL=start-command.js.map

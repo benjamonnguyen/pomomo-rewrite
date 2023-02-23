@@ -161,5 +161,5 @@ export const execute = async (interaction: CommandInteraction) => {
 		guildId: session.guildId,
 		adapterCreator: interaction.guild.voiceAdapterCreator,
 	});
-	playForState(session.state, [conn]).catch(console.error);
+	playForState(session.state, conn).catch(console.error);
 };

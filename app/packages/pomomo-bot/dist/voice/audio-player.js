@@ -82,8 +82,8 @@ class AudioPlayerManager extends EventEmitter {
         }
         return new Promise((resolve) => resolve(this.pool.pop()));
     }
-    async play(resource, connections) {
-        if (!connections.length || !resource) {
+    async play(resource, connection) {
+        if (!connection || !resource) {
             console.warn('audio-player.play() bad args');
             return;
         }
@@ -91,30 +91,27 @@ class AudioPlayerManager extends EventEmitter {
         const player = await this.getAvailablePlayer();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const connectionsOnceReady = [];
-        connections.forEach((conn) => {
-            conn.subscribe(player);
-            if (conn.state.status != VoiceConnectionStatus.Ready) {
-                connectionsOnceReady.push(once(conn, VoiceConnectionStatus.Ready));
-            }
-        });
+        connection.subscribe(player);
+        if (connection.state.status != VoiceConnectionStatus.Ready) {
+            connectionsOnceReady.push(once(connection, VoiceConnectionStatus.Ready));
+        }
         let timeout;
-        return Promise.race([
-            new Promise((resolve) => (timeout = setTimeout(() => {
-                console.error(`audioPlayerManager.play() omitted ${connections.length - player.playable.length}/${connections.length} connections`);
-                resolve('timeout');
+        await Promise.race([
+            new Promise((_, reject) => (timeout = setTimeout(() => {
+                console.error('audioPlayerManager.play() timeout!');
+                reject('timeout');
             }, MAX_WAIT_MS))),
             Promise.allSettled(connectionsOnceReady).then(() => clearTimeout(timeout)),
-        ]).then(() => {
-            player.play(resource);
-        });
+        ]);
+        player.play(resource);
     }
 }
 const audioPlayerManager = new AudioPlayerManager();
-export function playForState(state, connections) {
-    if (!connections.length) {
+export function playForState(state, connection) {
+    if (!connection) {
         return;
     }
-    console.debug(`audio-player.playForState() state: ${state} - ${connections.length} connections`);
+    console.debug(`audio-player.playForState() state: ${state}`);
     let resourcePath;
     if (state === ESessionState.POMODORO) {
         resourcePath = START_SOUND_PATH;
@@ -126,14 +123,14 @@ export function playForState(state, connections) {
         resourcePath = LONG_BREAK_SOUND_PATH;
     }
     if (resourcePath) {
-        return audioPlayerManager.play(createAudioResource(createReadStream(resourcePath)), connections);
+        return audioPlayerManager.play(createAudioResource(createReadStream(resourcePath)), connection);
     }
 }
-export function playIdleResource(connections) {
-    if (!connections.length) {
+export function playIdleResource(connection) {
+    if (!connection) {
         return;
     }
     console.debug('audio-player.playIdleResource()');
-    return audioPlayerManager.play(createAudioResource(createReadStream(IDLE_SOUND_PATH)), connections);
+    return audioPlayerManager.play(createAudioResource(createReadStream(IDLE_SOUND_PATH)), connection);
 }
 //# sourceMappingURL=audio-player.js.map

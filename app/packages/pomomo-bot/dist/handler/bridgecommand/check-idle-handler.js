@@ -1,35 +1,34 @@
-import config from 'config';
 import discordClient from '../../bot';
 import sessionRepo from '../../db/session-repo';
 import { buildSessionKey } from 'pomomo-common/src/db/session-repo';
 import { end } from '../../loadable/buttons/end-button';
 import { playIdleResource } from '../../voice/audio-player';
 import { joinVoiceChannel } from '@discordjs/voice';
-import { shardIdForGuildId } from 'pomomo-common/src/util/shard-util';
 import { handleRejectedSettledResults } from '../../logger';
-const TOTAL_SHARDS = config.get('bridge.totalShards');
 async function handle(command) {
     console.debug('check-idle.handle() ~', command.payload);
     try {
         const guild = await discordClient.guilds.fetch(command.targetGuildId);
-        if (guild.shardId == undefined) {
-            guild.shardId = shardIdForGuildId(parseInt(command.targetGuildId), TOTAL_SHARDS);
-        }
         const channel = (await guild.channels.fetch(command.payload.channelId));
         const sessionKey = buildSessionKey(guild.id, channel.id);
         await sessionRepo.client.json.set(sessionKey, '.idleCheck', new Date());
         const msg = await channel.send({
             content: 'Are you still there? 👀',
         });
+        let conn = null;
+        try {
+            conn = joinVoiceChannel({
+                channelId: channel.id,
+                guildId: guild.id,
+                adapterCreator: guild.voiceAdapterCreator,
+            });
+        }
+        catch (e) {
+            console.warn('check-idle.handle() - failed to get voiceConnection');
+        }
         const results = await Promise.allSettled([
             msg.react('👍'),
-            playIdleResource([
-                joinVoiceChannel({
-                    channelId: channel.id,
-                    guildId: guild.id,
-                    adapterCreator: guild.voiceAdapterCreator,
-                }),
-            ]),
+            playIdleResource(conn),
         ]);
         await msg
             .awaitReactions({
