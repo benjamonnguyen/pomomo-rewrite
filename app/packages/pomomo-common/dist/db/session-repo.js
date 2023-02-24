@@ -47,8 +47,9 @@ export class SessionRepository {
         await Promise.all([
             this.incSessionCount(session.guildId, 1),
             this.client.json.set(guildKey, '.name', guild.name),
-            // TODO increment sessionsStarted
-            this.client.json.set(guildKey, '.sessionsStarted', 0),
+            this.client.json
+                .numIncrBy(guildKey, '.sessionsStarted', 1)
+                .catch((_) => this.client.json.set(guildKey, '.sessionsStarted', 1)),
             this.client.json.set(guildKey, '.lastUpdated', new Date()),
         ]);
     }
