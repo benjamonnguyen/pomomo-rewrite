@@ -143,12 +143,12 @@ export const execute = async (interaction: CommandInteraction) => {
 
 		timerMsg = await send(session, member.voice.channel as TextBasedChannel);
 		session.timerMsgId = timerMsg.id;
-		await sessionRepo.insert(session);
+		await sessionRepo.insert(session, interaction.guild);
 		interaction
 			.editReply(
 				`Session started in ${channelMention(
 					session.channelId,
-				)}.\nFurther messages will be sent in that channel\'s chat.`,
+				)}.\nFurther messages will be sent in that channel's chat.`,
 			)
 			.catch(console.error);
 	} catch (e) {
@@ -161,5 +161,5 @@ export const execute = async (interaction: CommandInteraction) => {
 		guildId: session.guildId,
 		adapterCreator: interaction.guild.voiceAdapterCreator,
 	});
-	playForState(session.state, [conn]).catch(console.error);
+	playForState(session.state, conn).catch(console.error);
 };

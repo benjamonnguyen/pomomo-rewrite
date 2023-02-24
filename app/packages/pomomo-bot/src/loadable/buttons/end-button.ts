@@ -39,7 +39,7 @@ export async function end(session: Session): Promise<void> {
 	const res = await Promise.allSettled(promises);
 	res.forEach((r) => {
 		if (r.status === 'rejected') {
-			console.error('end-button.end() - error', r.reason);
+			console.error('end-button.end() - error:', r.reason);
 		}
 	});
 	try {
@@ -48,6 +48,6 @@ export async function end(session: Session): Promise<void> {
 			conn.destroy();
 		}
 	} catch (e) {
-		console.error('end.end()', e);
+		console.error('end-button.end() - error:', e);
 	}
 }

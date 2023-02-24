@@ -14,9 +14,9 @@ const IDLE_TIMEOUT_HOUR = config.get('session.idleTimeoutH');
 const PREMIUM_IDLE_TIMEOUT_HOUR = config.get('session.premium.idleTimeoutH');
 export var ESessionState;
 (function (ESessionState) {
-    ESessionState[ESessionState["POMODORO"] = 0] = "POMODORO";
-    ESessionState[ESessionState["SHORT_BREAK"] = 1] = "SHORT_BREAK";
-    ESessionState[ESessionState["LONG_BREAK"] = 2] = "LONG_BREAK";
+    ESessionState["POMODORO"] = "pomodoro";
+    ESessionState["SHORT_BREAK"] = "short break";
+    ESessionState["LONG_BREAK"] = "long break";
 })(ESessionState || (ESessionState = {}));
 export class Session {
     guildId;

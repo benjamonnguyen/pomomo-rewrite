@@ -94,9 +94,9 @@ export const execute = async (interaction) => {
         session.channelId = member.voice.channelId;
         timerMsg = await send(session, member.voice.channel);
         session.timerMsgId = timerMsg.id;
-        await sessionRepo.insert(session);
+        await sessionRepo.insert(session, interaction.guild);
         interaction
-            .editReply(`Session started in ${channelMention(session.channelId)}.\nFurther messages will be sent in that channel\'s chat.`)
+            .editReply(`Session started in ${channelMention(session.channelId)}.\nFurther messages will be sent in that channel's chat.`)
             .catch(console.error);
     }
     catch (e) {
@@ -108,6 +108,6 @@ export const execute = async (interaction) => {
         guildId: session.guildId,
         adapterCreator: interaction.guild.voiceAdapterCreator,
     });
-    playForState(session.state, [conn]).catch(console.error);
+    playForState(session.state, conn).catch(console.error);
 };
 //# sourceMappingURL=start-command.js.map

@@ -12,9 +12,9 @@ const PREMIUM_IDLE_TIMEOUT_HOUR = config.get(
 ) as number;
 
 export enum ESessionState {
-	POMODORO,
-	SHORT_BREAK,
-	LONG_BREAK,
+	POMODORO = 'pomodoro',
+	SHORT_BREAK = 'short break',
+	LONG_BREAK = 'long break',
 }
 
 export class Session {

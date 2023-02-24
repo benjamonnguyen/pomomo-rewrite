@@ -3,9 +3,9 @@ import Timer from '../timer/Timer';
 import { Stats } from '../stats';
 import { FocusMember } from '../focus-member';
 export declare enum ESessionState {
-    POMODORO = 0,
-    SHORT_BREAK = 1,
-    LONG_BREAK = 2
+    POMODORO = "pomodoro",
+    SHORT_BREAK = "short break",
+    LONG_BREAK = "long break"
 }
 export declare class Session {
     guildId: string;

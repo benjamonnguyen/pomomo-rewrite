@@ -4,29 +4,43 @@ import sessionRepo from '../../db/session-repo';
 import { update } from '../../message/session-message';
 import { joinVoiceChannel } from '@discordjs/voice';
 import discordClient from '../../bot';
-// import { handleAutoshush } from '../../autoshush';
+import { handleError } from '../../logger';
 
-async function handle(command: CommandMessage): Promise<void> {
-	console.debug('go-next-state.handle() ~', command.payload);
+async function handle(commands: CommandMessage[]): Promise<void> {
+	if (commands.length === 0) {
+		return;
+	}
 
-	const guild = await discordClient.guilds.fetch(command.targetGuildId);
+	console.debug(`go-next-state-handler - ${commands.length} cmds`);
+	for (const command of commands) {
+		const session = await sessionRepo.get(
+			command.targetGuildId,
+			command.payload.channelId,
+		);
+		session.goNextState();
+		await sessionRepo.set(session);
 
-	const session = await sessionRepo.get(
-		command.targetGuildId,
-		command.payload.channelId,
-	);
+		// TODO await handleAutoshush(session, guild.members);
+		update(session).catch(handleError);
+		const guild = await discordClient.guilds.fetch(command.targetGuildId);
 
-	session.goNextState();
-	await sessionRepo.set(session);
-
-	// TODO await handleAutoshush(session, guild.members);
-
-	const conn = joinVoiceChannel({
-		channelId: session.channelId,
-		guildId: session.guildId,
-		adapterCreator: guild.voiceAdapterCreator,
-	});
-	await Promise.allSettled([update(session), playForState(session.state, [conn])]);
+		let conn;
+		try {
+			conn = joinVoiceChannel({
+				channelId: session.channelId,
+				guildId: session.guildId,
+				adapterCreator: guild.voiceAdapterCreator,
+			});
+			await playForState(session.state, conn);
+		} catch (e) {
+			console.error('go-next-state-handler error:', e);
+			const channel = await guild.channels.fetch(session.channelId);
+			if (channel && channel.isTextBased()) {
+				await channel.send(`Starting ${session.state}!`);
+			}
+			return;
+		}
+	}
 }
 
 export default handle;

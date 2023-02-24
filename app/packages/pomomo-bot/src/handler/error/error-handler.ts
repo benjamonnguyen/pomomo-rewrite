@@ -9,13 +9,12 @@ export async function handleInteractionError(
 	interaction: Interaction,
 	e: Error,
 ) {
-	console.warn(
-		'----------\nerror-handler.handleInteractionError()',
-		e,
-		'\n----------',
-	);
 	if (e instanceof DiscordAPIError) {
 		if (e.status === 403) {
+			console.debug(
+				'error-handler.handleInteractionError() DiscordAPIError 403:',
+				e.message,
+			);
 			if (e.code === ErrorCode.MISSING_ACCESS) {
 				return await _reply(
 					interaction,
@@ -28,6 +27,10 @@ export async function handleInteractionError(
 			);
 		}
 		if (e.status === 404) {
+			console.debug(
+				'error-handler.handleInteractionError() DiscordAPIError 404:',
+				e.message,
+			);
 			if (e.code === ErrorCode.UNKNOWN_INTERACTION) {
 				return await _reply(
 					interaction,
@@ -37,6 +40,11 @@ export async function handleInteractionError(
 		}
 	}
 
+	console.error(
+		'----------\nerror-handler.handleInteractionError()',
+		e,
+		'\n----------',
+	);
 	return await _reply(interaction, null);
 }
 

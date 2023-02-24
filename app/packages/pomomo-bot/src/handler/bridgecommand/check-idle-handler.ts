@@ -5,7 +5,8 @@ import { TextBasedChannel } from 'discord.js';
 import { buildSessionKey } from 'pomomo-common/src/db/session-repo';
 import { end } from '../../loadable/buttons/end-button';
 import { playIdleResource } from '../../voice/audio-player';
-import { joinVoiceChannel } from '@discordjs/voice';
+import { joinVoiceChannel, VoiceConnection } from '@discordjs/voice';
+import { handleRejectedSettledResults } from '../../logger';
 
 async function handle(command: CommandMessage): Promise<void> {
 	console.debug('check-idle.handle() ~', command.payload);
@@ -22,14 +23,20 @@ async function handle(command: CommandMessage): Promise<void> {
 		const msg = await channel.send({
 			content: 'Are you still there? 👀',
 		});
-		await msg.react('👍');
-		await playIdleResource([
-			joinVoiceChannel({
+		let conn: VoiceConnection = null;
+		try {
+			conn = joinVoiceChannel({
 				channelId: channel.id,
 				guildId: guild.id,
 				adapterCreator: guild.voiceAdapterCreator,
-			}),
-		]).catch(console.error);
+			});
+		} catch (e) {
+			console.warn('check-idle.handle() - failed to get voiceConnection');
+		}
+		const results: Array<PromiseSettledResult<any>> = await Promise.allSettled([
+			msg.react('👍'),
+			playIdleResource(conn),
+		]);
 		await msg
 			.awaitReactions({
 				errors: ['time'],
@@ -37,25 +44,34 @@ async function handle(command: CommandMessage): Promise<void> {
 				time: 300000,
 				filter: (reaction, _) => reaction.emoji.name === '👍',
 			})
-			.then(() => {
-				msg.delete().catch(console.error);
-				return Promise.all([
-					sessionRepo.client.json.del(sessionKey, '.idleCheck'),
-					sessionRepo.client.json.set(
-						sessionKey,
-						'.lastInteracted',
-						new Date(),
-					),
-				]);
+			.then(async () => {
+				results.push(
+					...(await Promise.allSettled([
+						msg.delete(),
+						sessionRepo.client.json.del(sessionKey, '.idleCheck'),
+						sessionRepo.client.json.set(
+							sessionKey,
+							'.lastInteracted',
+							new Date(),
+						),
+					])),
+				);
 			})
-			.catch(() => {
-				console.error('check-idle.handle() - killing idle session');
-				sessionRepo
-					.get(command.targetGuildId, command.payload.channelId)
-					.then((session) => end(session).catch(console.error))
-					.catch(console.error);
-				msg.edit({ content: 'Idle session ended' }).catch(console.error);
+			.catch(async () => {
+				const session = await sessionRepo.get(
+					command.targetGuildId,
+					command.payload.channelId,
+				);
+				console.info('check-idle.handle() - killing idle session', session.id);
+				results.push(
+					...(await Promise.allSettled([
+						end(session),
+						msg.edit({ content: 'Idle session ended' }),
+					])),
+				);
 			});
+
+		handleRejectedSettledResults(results);
 	} catch (e) {
 		console.error('check-idle.handle() error', e);
 		sessionRepo

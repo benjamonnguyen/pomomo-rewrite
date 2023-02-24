@@ -6,6 +6,7 @@ import path from 'node:path';
 import { createReadStream } from 'node:fs';
 import { ESessionState } from 'pomomo-common/src/model/session';
 import { fileURLToPath } from 'url';
+import discordClient from '../bot';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const START_SOUND_PATH = path.join(__dirname, '..', '..', 'resources', 'sound', 'start.ogg');
 const SHORT_BREAK_SOUND_PATH = path.join(__dirname, '..', '..', 'resources', 'sound', 'short-break.ogg');
@@ -41,7 +42,9 @@ class AudioPlayerManager extends EventEmitter {
             killCount++;
             this.totalSize--;
         }
-        console.info(`audioPlayerManager.killTimedOutPlayers() ~ killCount ${killCount} ~ totalSize ${this.totalSize}`);
+        if (killCount) {
+            console.info(`audioPlayerManager clusterId ${discordClient.cluster.id || -1} ~ killCount ${killCount} ~ totalSize ${this.totalSize}`);
+        }
     }
     pollKillTimedOutPlayers() {
         this.killTimedOutPlayers();
@@ -72,37 +75,43 @@ class AudioPlayerManager extends EventEmitter {
                 this.addPlayer();
             }
             else {
+                const now = new Date();
                 await once(this, 'available');
+                console.info(`waited ${(new Date().getTime() - now.getTime()) / 1000} seconds for availablePlayer`);
             }
         }
         return new Promise((resolve) => resolve(this.pool.pop()));
     }
-    async play(resource, connections) {
-        if (!connections.length || !resource) {
+    async play(resource, connection) {
+        if (!connection || !resource) {
+            console.warn('audio-player.play() bad args');
             return;
         }
-        const MAX_WAIT_MS = 5000;
+        const MAX_WAIT_MS = 10000;
         const player = await this.getAvailablePlayer();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const connectionsOnceReady = [];
-        connections.forEach((conn) => {
-            conn.subscribe(player);
-            if (conn.state.status != VoiceConnectionStatus.Ready) {
-                connectionsOnceReady.push(once(conn, VoiceConnectionStatus.Ready));
-            }
-        });
-        return Promise.race([
-            new Promise((resolve) => setTimeout(resolve, MAX_WAIT_MS)),
-            Promise.allSettled(connectionsOnceReady),
-        ]).then(() => player.play(resource));
+        connection.subscribe(player);
+        if (connection.state.status != VoiceConnectionStatus.Ready) {
+            connectionsOnceReady.push(once(connection, VoiceConnectionStatus.Ready));
+        }
+        let timeout;
+        await Promise.race([
+            new Promise((_, reject) => (timeout = setTimeout(() => {
+                console.error('audioPlayerManager.play() timeout!');
+                reject('timeout');
+            }, MAX_WAIT_MS))),
+            Promise.allSettled(connectionsOnceReady).then(() => clearTimeout(timeout)),
+        ]);
+        player.play(resource);
     }
 }
 const audioPlayerManager = new AudioPlayerManager();
-export function playForState(state, connections) {
-    if (!connections.length) {
+export function playForState(state, connection) {
+    if (!connection) {
         return;
     }
-    console.debug('audio-player.playForState()', state.toString());
+    console.debug(`audio-player.playForState() state: ${state}`);
     let resourcePath;
     if (state === ESessionState.POMODORO) {
         resourcePath = START_SOUND_PATH;
@@ -114,14 +123,14 @@ export function playForState(state, connections) {
         resourcePath = LONG_BREAK_SOUND_PATH;
     }
     if (resourcePath) {
-        return audioPlayerManager.play(createAudioResource(createReadStream(resourcePath)), connections);
+        return audioPlayerManager.play(createAudioResource(createReadStream(resourcePath)), connection);
     }
 }
-export function playIdleResource(connections) {
-    if (!connections.length) {
+export function playIdleResource(connection) {
+    if (!connection) {
         return;
     }
     console.debug('audio-player.playIdleResource()');
-    return audioPlayerManager.play(createAudioResource(createReadStream(IDLE_SOUND_PATH)), connections);
+    return audioPlayerManager.play(createAudioResource(createReadStream(IDLE_SOUND_PATH)), connection);
 }
 //# sourceMappingURL=audio-player.js.map
