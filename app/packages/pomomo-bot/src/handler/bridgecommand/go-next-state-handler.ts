@@ -24,13 +24,13 @@ async function handle(commands: CommandMessage[]): Promise<void> {
 		update(session).catch(handleError);
 		const guild = await discordClient.guilds.fetch(command.targetGuildId);
 
-		let conn;
 		try {
-			conn = joinVoiceChannel({
+			const conn = joinVoiceChannel({
 				channelId: session.channelId,
 				guildId: session.guildId,
 				adapterCreator: guild.voiceAdapterCreator,
 			});
+
 			await playForState(session.state, conn);
 		} catch (e) {
 			console.error('go-next-state-handler error:', e);

@@ -161,5 +161,25 @@ export const execute = async (interaction: CommandInteraction) => {
 		guildId: session.guildId,
 		adapterCreator: interaction.guild.voiceAdapterCreator,
 	});
+	conn.once('stateChange', (oldState, newState) => {
+		const oldNetworking = Reflect.get(oldState, 'networking');
+		const newNetworking = Reflect.get(newState, 'networking');
+
+		const networkStateChangeHandler = (
+			oldNetworkState: any,
+			newNetworkState: any,
+		) => {
+			const newUdp = Reflect.get(newNetworkState, 'udp');
+			clearInterval(newUdp?.keepAliveInterval);
+		};
+
+		oldNetworking?.off('stateChange', networkStateChangeHandler);
+		newNetworking?.on('stateChange', networkStateChangeHandler);
+	});
+	// conn.on('stateChange', (oldState, newState) => {
+	// 	if (oldState.status === VoiceConnectionStatus.Ready && newState.status === VoiceConnectionStatus.Connecting) {
+	// 		conn.configureNetworking();
+	// 	}
+	// });
 	playForState(session.state, conn).catch(console.error);
 };
