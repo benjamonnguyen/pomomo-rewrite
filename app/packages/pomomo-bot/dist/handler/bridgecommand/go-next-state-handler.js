@@ -16,9 +16,8 @@ async function handle(commands) {
         // TODO await handleAutoshush(session, guild.members);
         update(session).catch(handleError);
         const guild = await discordClient.guilds.fetch(command.targetGuildId);
-        let conn;
         try {
-            conn = joinVoiceChannel({
+            const conn = joinVoiceChannel({
                 channelId: session.channelId,
                 guildId: session.guildId,
                 adapterCreator: guild.voiceAdapterCreator,

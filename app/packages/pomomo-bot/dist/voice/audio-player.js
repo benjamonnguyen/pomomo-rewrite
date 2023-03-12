@@ -1,4 +1,5 @@
 import config from 'config';
+import { v4 } from 'uuid';
 import { AudioPlayer, AudioPlayerStatus, createAudioResource, VoiceConnectionStatus, } from '@discordjs/voice';
 import Denque from 'denque';
 import { once, EventEmitter } from 'node:events';
@@ -17,6 +18,7 @@ const maxPoolSize = config.get('voice.audioPlayer.pool.maxSize');
 const idleTimeout = config.get('voice.audioPlayer.pool.idleTimeoutMs');
 const idleTimeoutPollRate = config.get('voice.audioPlayer.pool.idleTimeoutPollRateMs');
 class MyAudioPlayer extends AudioPlayer {
+    id = v4();
     lastActive = new Date();
     isTimedOut() {
         return new Date().getTime() - this.lastActive.getTime() >= idleTimeout;
@@ -80,30 +82,30 @@ class AudioPlayerManager extends EventEmitter {
                 console.info(`waited ${(new Date().getTime() - now.getTime()) / 1000} seconds for availablePlayer`);
             }
         }
-        return new Promise((resolve) => resolve(this.pool.pop()));
+        return new Promise((resolve) => {
+            const player = this.pool.pop();
+            resolve(player);
+        });
     }
     async play(resource, connection) {
         if (!connection || !resource) {
             console.warn('audio-player.play() bad args');
             return;
         }
-        const MAX_WAIT_MS = 10000;
-        const player = await this.getAvailablePlayer();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const connectionsOnceReady = [];
-        connection.subscribe(player);
-        if (connection.state.status != VoiceConnectionStatus.Ready) {
-            connectionsOnceReady.push(once(connection, VoiceConnectionStatus.Ready));
+        // wait for up to 30s for voiceConnection to be ready
+        const MAX_RETRIES = 6;
+        const RETRY_INTERVAL_MS = 5000;
+        let retries = 0;
+        while (connection.state.status !== VoiceConnectionStatus.Ready) {
+            if (retries++ === MAX_RETRIES) {
+                throw 'timeout';
+            }
+            await new Promise((r) => setTimeout(r, RETRY_INTERVAL_MS));
         }
-        let timeout;
-        await Promise.race([
-            new Promise((_, reject) => (timeout = setTimeout(() => {
-                console.error('audioPlayerManager.play() timeout!');
-                reject('timeout');
-            }, MAX_WAIT_MS))),
-            Promise.allSettled(connectionsOnceReady).then(() => clearTimeout(timeout)),
-        ]);
+        const player = await this.getAvailablePlayer();
+        connection.subscribe(player);
         player.play(resource);
+        console.debug('audio-player.play() id:', player.id);
     }
 }
 const audioPlayerManager = new AudioPlayerManager();
