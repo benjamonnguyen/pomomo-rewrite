@@ -19,7 +19,7 @@ import { loadCommands, loadButtons } from './loadable/loader';
 import handleBridgeCommands from './handler/bridgecommand/bridge-command-handler';
 import sessionRepo from './db/session-repo';
 import handleInteraction from './handler/interaction/interaction-handler';
-import leaveInactiveGuilds from './leave-inactive-guilds';
+import { leaveInactiveGuilds, leaveGuilds } from './leave-inactive-guilds';
 
 export class MyDiscordClient extends Client {
 	commands: Map<string, (interaction: CommandInteraction) => Promise<void>>;
@@ -88,10 +88,13 @@ discordClient.on('warn', (data) => console.warn('discordClient warn: ' + data));
 // discordClient.on('cacheSweep', (data) => console.info('cacheSweep: ' + data));
 discordClient.once('ready', async (_) => {
 	console.info(
-		`clusterId ${discordClient.cluster.id} - guild count ${discordClient.guilds.cache.size}`,
+		`clusterId ${discordClient.cluster ? discordClient.cluster.id : ''} - guild count ${discordClient.guilds.cache.size}`,
 	);
 	if (process.env.LEAVE_INACTIVE_GUILDS) {
 		await leaveInactiveGuilds(discordClient.guilds.cache.values());
+	}
+	if (process.env.LEAVE_GUILDS) {
+		await leaveGuilds(discordClient);
 	}
 });
 // discordClient.on('shardReady', (data) => console.info('shardReady: ' + data));
